@@ -1,22 +1,35 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "target": "es6",
-        "noImplicitAny": true,
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "outDir": "dist",
-        "baseUrl": ".",
+        "module": "CommonJS",
+		"target": "ES6",
+		"sourceMap": true,
+		"outDir": "./dist/",
+		"lib": ["es2017", "es7", "es6", "DOM"],
+		"baseUrl": ".",
+		"resolveJsonModule": true,
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"declaration": false,
+		"allowJs": true,
+		"strict": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "types": ["node", "webdriverio/async", "@types/jest"],
         "paths": {
-            "*": [
-                "node_modules/*",
-                "src/types/*"
-            ]
-        }
+            "@app/*": ["./src/*"],
+            "@webdriver/*": ["./src/webdriverio/*"],
+        },
+        "plugins": [
+			{ "transform": "typescript-transform-paths" },
+			{ "transform": "typescript-transform-paths", "afterDeclarations": true }
+		]
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "test/**/*"
     ]
 }

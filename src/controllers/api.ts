@@ -1,33 +1,60 @@
-"use strict";
+'use strict';
 
-import graph from "fbgraph";
-import { Response, Request, NextFunction } from "express";
-import { UserDocument } from "../models/User";
-
+import fs from 'fs';
+import path from 'path';
+import { Response, Request, NextFunction } from 'express';
+// import { webdriver } from '../app';
+import Dashboard from '@webdriver/pages/Dashboard.page';
+import Login from '@webdriver/pages/Login.page';
 
 /**
  * List of API examples.
  * @route GET /api
  */
-export const getApi = (req: Request, res: Response) => {
-    res.render("api/index", {
-        title: "API Examples"
-    });
+export const getApi = (req: Request, res: Response): void => {
+    res.json('Hello World!');
 };
 
-/**
- * Facebook API example.
- * @route GET /api/facebook
- */
-export const getFacebook = (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user as UserDocument;
-    const token = user.tokens.find((token: any) => token.kind === "facebook");
-    graph.setAccessToken(token.accessToken);
-    graph.get(`${user.facebook}?fields=id,name,email,first_name,last_name,gender,link,locale,timezone`, (err: Error, results: graph.FacebookUser) => {
-        if (err) { return next(err); }
-        res.render("api/facebook", {
-            title: "Facebook API",
-            profile: results
-        });
-    });
-};
+// export const totalplayLogin = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+//     await webdriver.url('https://www.mitotalplay.com.mx/');
+//     const login: Login = new Login(webdriver);
+//     await login.login('0101475155', 'RemarRobin@498');
+//     await webdriver.pause(4000);
+//     const dashboard: Dashboard = new Dashboard(webdriver);
+//     if(await dashboard.checkLimitSessionReached()){
+//         await login.login('0101475155', 'RemarRobin@498');
+//         await webdriver.pause(4000);
+//     }
+//     if(await webdriver.getCookies(['_ga'][0]) == undefined){
+//         res.json({error: true});
+//         return;
+//     }    
+//     await dashboard.ottvLinkClick();
+//     await webdriver.pause(3000);
+//     await webdriver.closeWindow();
+//     await webdriver.pause(3000);
+//     await dashboard.ottvLinkClick();
+//     await webdriver.pause(3000);
+//     res.json({error: false});
+// };
+
+// export const totalplayPlaylist = async(req: Request, res: Response, next: NextFunction): Promise<void> => {
+//     await webdriver.url('https://www.mitotalplay.com.mx/');
+//     const login: Login = new Login(webdriver);
+//     await login.login('0101475155', 'RemarRobin@498');
+//     await webdriver.pause(4000);
+//     const dashboard: Dashboard = new Dashboard(webdriver);
+//     if(await dashboard.checkLimitSessionReached()){
+//         await webdriver.pause(2000);
+//         await login.login('0101475155', 'RemarRobin@498');
+//         await webdriver.pause(4000);
+//     }
+//     if(await webdriver.getCookies(['_ga'][0]) == undefined){
+//         res.json({error: true});
+//         return;
+//     }    
+//     await dashboard.openLiveVideo();
+//     res.json({error: false});
+// };
+
+

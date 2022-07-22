@@ -18,6 +18,10 @@ class Login extends Base {
 		return this.browser.$(`button#log-but-inises`);
 	}
 
+	get modalLoad(): ChainablePromiseElement<WebdriverIO.Element> {
+		return this.browser.$(`div#modalLoad`);
+	}
+
 	public login = async (email: string, password: string): Promise<void> => {
 		await this.inputEmail.waitForEnabled();
 		await this.waitRandomTime();
@@ -34,6 +38,7 @@ class Login extends Base {
 		}
 		await this.waitRandomTime();
 		await this.buttonSubmit.click();
+		await this.modalLoad.waitForDisplayed({reverse: true, timeout: 10000, interval: 800});
 	};
 }
 

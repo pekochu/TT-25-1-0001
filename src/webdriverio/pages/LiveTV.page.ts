@@ -1,6 +1,17 @@
 import Base from './Base.page';
 import { ChainablePromiseElement, Mock } from 'webdriverio';
 
+export interface CategoriesChannels{
+    name: string;
+    value: number;
+}
+
+export interface ChannelsArray{
+    name: string;
+    categoryId: number;
+    channels: string[];
+}
+
 class LiveTV extends Base {
 
     // Interceptor variables
@@ -8,12 +19,36 @@ class LiveTV extends Base {
 	private master_image?: Mock;
 	private la_guia_nueva_player?: Mock;
 
+    static categories: CategoriesChannels[] = [
+        { name:'Abierta', value: 1 },
+        { name:'Entretenimiento', value: 8 },
+        { name:'Infantiles', value: 5 },
+        { name:'Mundo y Cultura', value: 6 },
+        { name:'Cine', value: 7 },
+        { name:'Deporte Total', value: 3 },
+        { name:'Noticias', value: 2 },
+        { name:'Internacionales', value: 9 },
+        { name:'Musica', value: 9 },
+    ];
+
 	constructor(browser: WebdriverIO.Browser) {
 		super(browser);
 	}
 
     get channelsContainer(): ChainablePromiseElement<WebdriverIO.Element> {
 		return this.browser.$(`div#newGridGuiaDetalle`);
+	} 
+
+    get pauseVideo(): ChainablePromiseElement<WebdriverIO.Element> {
+		return this.browser.$(`div.BTpausa`);
+	} 
+
+    get channelsCombo(): ChainablePromiseElement<WebdriverIO.Element> {
+		return this.browser.$(`div#typeChannelsCombo > select`);
+	} 
+
+    get firstChannel(): ChainablePromiseElement<WebdriverIO.Element> {
+		return this.browser.$(`//div[contains(@class, 'channelMostrado')][1]`);
 	} 
 
     public open = async (): Promise<void> => {
@@ -35,36 +70,33 @@ class LiveTV extends Base {
 		});
 	}    
 
-    public goToChannel = async (channel: number): Promise<void> => {
+    public goToChannel = async (channel: number, previous: number): Promise<void> => {
         await (await this.channelsContainer).waitForDisplayed();
         await this.browser.execute('window.scrollTo(0, document.body.scrollHeight);');
+        await (await this.firstChannel).waitForDisplayed();
         await (await this.channelsContainer).click();
         const channelElement = await this.browser.$(`//div[@id='canalDiv${channel}']`);
+        const upOrDown = channel >= previous ? '\uE00F' : '\uE00E';
         while (!(await channelElement.isDisplayedInViewport())) {
-			await (await this.channelsContainer).setValue('\uE015');
-			await this.browser.pause(150);
+			await (await this.channelsContainer).setValue(upOrDown);
+			await this.browser.pause(200);
 		}
         await channelElement.waitForExist();
-        await channelElement.scrollIntoView({
-            behavior: 'smooth',
-			block: 'end',
-        });
-        const liveContent = await this.browser.$(`//div[@id='canalDiv${channel}']/div/div[@onclick][last()]`);
-        if(await liveContent.isClickable()){
-            await liveContent.waitForClickable({timeout: 5000});
-            await this.waitRandomTime();
-            const selectorPlay = `${liveContent.selector}/div[@class='showIconPlay']`;
-            const play = await this.browser.$(selectorPlay);
-            await play.click();
-        }
+        const liveContent = await this.browser.$(`//div[@id='canalDiv${channel}']//div[@class='showProgressLive']`);
+        await liveContent.waitForDisplayed({timeout: 5000});
+        await this.waitRandomTime();
+        const play = await this.browser.$(`${liveContent.selector}/following-sibling::div[@class='showIconPlay']`);
+        await this.waitRandomTime();
+        await play.click();
         
     }
 
     public getChannelUrl = async (): Promise<string> => {
-        console.log(this.la_guia_nueva_player?.calls);
         const html = this.la_guia_nueva_player?.calls.pop();
         if(html != undefined){
-            console.log(html);
+            if(await (await this.pauseVideo).isExisting()){
+                await (await this.pauseVideo).click();
+            }
             const content: string = html.body as string;
             const result = content.match(/\'(.+)\'/g);
             let hlsUrl = result?.pop();
@@ -78,6 +110,13 @@ class LiveTV extends Base {
 
         return '';
     }
+
+    public setChannelsCategory = async (categoryId: string): Promise<void> => {
+		const categoryPicker = await this.channelsCombo;
+		await categoryPicker.waitForClickable();
+        await categoryPicker.selectByAttribute('value', categoryId);
+        await this.waitRandomTime();
+	};
 }
 
 export default LiveTV;

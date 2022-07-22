@@ -77,7 +77,7 @@ describe.skip('WebdriverIO', () => {
         it('get the channel url', async () => {
             const live: LiveTV = new LiveTV(browser);
             await live.mockResponses();
-            await live.goToChannel(105);
+            await live.goToChannel(105, 105);
             await browser.pause(5000);
             await live.getChannelUrl();
             const screenshot = path.resolve(`${screenshotpath}livetv_${new Date().getTime()}.png`);

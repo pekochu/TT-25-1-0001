@@ -1,27 +1,118 @@
 extends layout
 
 block content
-  h1 Hackathon Starter
-  p.lead A boilerplate for Node.js web applications.
-  hr
-  .row
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-secondary(href='#', role='button') View details »
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-secondary(href='#', role='button') View details »
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-secondary(href='#', role='button') View details »
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-secondary(href='#', role='button') View details »
+  .page-header
+    h3 Totalplay Live
+    hr
+
+  div.row
+    div.col-sm-12.col-xs-12.col-md-9.col-12
+      div.ratio.ratio-16x9
+        video.ratio-item#videoVideo.videoTV1(autoplay controls)
+    div.col-sm-12.col-xs-12.col-md-3.col-12
+      form#changeChannel(method='POST')
+        input(type='hidden', name='_csrf', value=_csrf)
+        div.mb-3 
+          label.form-label.font-weight-bold(for='category') Categoria
+          select.form-select.form-select-lg.mb-3(name='category', id='category', autofocus=true)
+        div.mb-3 
+          label.form-label.font-weight-bold(for='channel') Canal
+          select.form-select.form-select-lg.mb-3(name='channel', id='channel', autofocus=true)
+        div.my-3.d-grid.gap-2
+          button.btn.btn-block.btn-primary(type='submit')
+            i.fa.fa-chromecast
+            | Ver
+        div.mb-3 
+          div#livemessages.alert.alert-secondary.visually-hidden.alert-dismissible.fade
+
+append scripts
+  script(async, defer,).
+    var doHeartbeat = true;
+    var loadChannels = true;
+    var categories = null;
+    var categorySelected = -1;
+    function heartbeat(){
+      if(doHeartbeat){
+        $.get("/api/v1/totalplay/heartbeat", function( data ) {
+          if(loadChannels){
+            $.get("/api/v1/totalplay/channels", function( data ) {
+              $(data.perCategories).each(function(i, e){
+                var option = $("<option>", {
+                  'text': e.name,
+                  'value': e.categoryId
+                });
+                $("#category").append(option);                
+              });
+              categories = data;
+              loadChannels = false;
+              $("#category").trigger('change');
+            }).fail(function() {
+              displayMessage('Error al iniciar sesión...')
+              loadChannels = true;              
+            });
+          }
+        }).fail(function() {
+          displayMessage('Restaurando sesión...');
+          doHeartbeat = false;
+          $.get("/api/v1/totalplay/login", function( data ) {
+            displayMessage('Sesión restaurada...')
+            doHeartbeat = true;       
+          }).fail(function() {
+            displayMessage('Error al iniciar sesión...')
+            doHeartbeat = true;              
+          });
+        });
+      }        
+    }
+
+    function displayMessage(text = ''){
+      $('div#livemessages').toggleClass('visually-hidden').toggleClass('show').text(text);
+      setTimeout(function(){
+        $('div#livemessages').toggleClass('show');
+      }, 5000);
+      setTimeout(function(){
+        $('div#livemessages').toggleClass('visually-hidden')
+      }, 5500);
+    }
+
+    $('#category').on('change', function (e) {
+      var optionSelected = $("option:selected", this);
+      var valueSelected = this.value;
+      if(categories != null){
+        $(categories.perCategories).each(function(i, e){
+          if(e.categoryId == valueSelected){
+            $("#channel").html('');
+            $(e.channels).each(function(e, i){
+              var option = $("<option>", {
+                'text': i,
+                'value': i
+              });
+              $("#channel").append(option);
+            });
+          }
+        });
+        
+      }
+    });
+
+    $(document).ready(function(){
+      heartbeat();
+      setInterval(heartbeat, 10000);
+    });
+    try {        
+      var adelante = 0;
+      $("#changeChannel").submit(function(e){
+        e.preventDefault();
+        var category = $('select#category option').filter(':selected').val();
+        var channel = $('select#channel option').filter(':selected').val();
+        displayMessage('Cargando canal');
+        $.post('/api/v1/totalplay/live/' + category + '/' + parseInt(channel), function( data ) {
+          OpenHls('/api/v1/totalplay/live/cache', adelante);       
+        }).fail(function() {
+          displayMessage('Error al cargar canal');
+        });
+        
+      });
+    } catch (err) {
+      QuitarEsperaPLUGIN();
+    }

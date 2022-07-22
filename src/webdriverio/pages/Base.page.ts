@@ -8,8 +8,8 @@ abstract class Base {
 		this.browser = browser;
 	}
 
-	public waitRandomTime = async (): Promise<void> => {
-		await this.browser.pause(random.int(1000, 1500));
+	public waitRandomTime = async (min = 500, max = 1500): Promise<void> => {
+		await this.browser.pause(random.int(min, max));
 	};
 }
 

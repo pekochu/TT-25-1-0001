@@ -31,7 +31,7 @@ class Dashboard extends Base {
 	}
 
 	public ottvLinkClick = async (): Promise<void> => {
-		await this.ottvLink.waitForClickable();
+		await this.ottvLink.waitForClickable({timeout: 6000});
 		this.ottvLink.click();
 	}
 
@@ -42,7 +42,7 @@ class Dashboard extends Base {
 			await (await this.confirmCloseAllSessions).waitForClickable();
 			await this.waitRandomTime();
 			await (await this.confirmCloseAllSessions).click();
-			await (await this.gotItButton).waitForClickable();
+			await (await this.gotItButton).waitForClickable({timeout: 10000});
 			await this.waitRandomTime();
 			await (await this.gotItButton).click();
 			return true;
@@ -53,13 +53,13 @@ class Dashboard extends Base {
 	public openLiveVideo = async (): Promise<void> => {
 		const firstWindowHandle = await this.browser.getWindowHandle();
 		await this.ottvLinkClick();
-        await this.waitRandomTime();
+        await this.waitRandomTime(1500, 2000);
         await this.browser.closeWindow();
-        await this.waitRandomTime();
+        await this.waitRandomTime(1500, 2000);
         await this.ottvLinkClick();
-        await this.waitRandomTime();
+        await this.waitRandomTime(1500, 2000);
         await this.browser.switchToWindow(firstWindowHandle);
-        await this.waitRandomTime();
+        await this.waitRandomTime(1500, 2000);
         await this.browser.closeWindow();
 	}
 }

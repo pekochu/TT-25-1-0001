@@ -9,6 +9,7 @@ import { SESSION_SECRET } from '@app/util/secrets';
 // Controllers (route handlers)
 import * as homeController from '@app/controllers/home';
 import * as apiController from '@app/controllers/api';
+import * as totalplayController from '@app/controllers/totalplay';
 import * as contactController from '@app/controllers/contact';
 import ApiError from '@app/util/apierror';
 
@@ -47,10 +48,11 @@ app.post('/contact', contactController.postContact);
  */
 app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/ip', apiController.getIp);
-app.get('/api/v1/totalplay/login', apiController.totalplayLogin);
-app.get('/api/v1/totalplay/channels/', apiController.totalplayChannels);
-app.post('/api/v1/totalplay/live/:categoryId/:channelId', apiController.totalplayLive);
-app.get('/api/v1/totalplay/live/cache', apiController.totalplayLiveCache);
-app.get('/api/v1/totalplay/heartbeat', apiController.totalplayHeartbeat);
+app.get('/api/v1/screenshot', apiController.getScreenshot);
+app.get('/api/v1/totalplay/login', totalplayController.totalplayLogin);
+app.get('/api/v1/totalplay/channels/', totalplayController.totalplayChannels);
+app.post('/api/v1/totalplay/live/:categoryId/:channelId', totalplayController.totalplayLive);
+app.get('/api/v1/totalplay/live/cache', totalplayController.totalplayLiveCache);
+app.get('/api/v1/totalplay/heartbeat', totalplayController.totalplayHeartbeat);
 
 export default app;

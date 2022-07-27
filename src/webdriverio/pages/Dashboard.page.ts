@@ -1,4 +1,5 @@
 import Base from './Base.page';
+import LiveTV from './LiveTV.page';
 import { ChainablePromiseElement } from 'webdriverio';
 
 class Dashboard extends Base {
@@ -50,17 +51,21 @@ class Dashboard extends Base {
 		return false;
 	}
 
-	public openLiveVideo = async (): Promise<void> => {
+	public openLiveVideo = async (): Promise<LiveTV> => {
 		const firstWindowHandle = await this.browser.getWindowHandle();
 		await this.ottvLinkClick();
         await this.waitRandomTime(1500, 2000);
         await this.browser.closeWindow();
         await this.waitRandomTime(1500, 2000);
         await this.ottvLinkClick();
+		const livetv = new LiveTV(this.browser);
         await this.waitRandomTime(1500, 2000);
         await this.browser.switchToWindow(firstWindowHandle);
         await this.waitRandomTime(1500, 2000);
         await this.browser.closeWindow();
+		await this.waitRandomTime(1500, 2000);
+		await livetv.pauseTransmission();
+		return livetv;
 	}
 }
 

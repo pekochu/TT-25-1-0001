@@ -80,9 +80,9 @@ export const totalplayLive = async(req: Request, res: Response, next: NextFuncti
     const channelId: number = parseInt(req.params.channelId);
     const flashChannel = req.flash('totalplay.previousChannel')[0];
     const flashCategory = req.flash('totalplay.previousCategory')[0];
-    const prevCategory = flashCategory === undefined ? -1 : parseInt((flashCategory as unknown) as string);    
-    let prevChannel = flashChannel === undefined ? channelId : parseInt((flashChannel as unknown) as string);    
-    prevChannel = categoryId == prevCategory ? prevChannel : 2;
+    // const prevCategory = flashCategory === undefined ? -1 : parseInt((flashCategory as unknown) as string);    
+    // let prevChannel = flashChannel === undefined ? channelId : parseInt((flashChannel as unknown) as string);    
+    // prevChannel = categoryId == prevCategory ? prevChannel : 2;
     const browser = await remote;
     // Check if we have logged in
     if(!(await isLoggedIn(browser))){
@@ -92,31 +92,14 @@ export const totalplayLive = async(req: Request, res: Response, next: NextFuncti
     req.flash('totalplay.previousCategory', categoryId);
     const live: LiveTV = new LiveTV(browser);
     await live.mockResponses();
-    if(categoryId !== prevCategory){
-        await live.setChannelsCategory(`${categoryId}`);
-    }
-    await live.goToChannel(channelId, prevChannel);
+    await live.setChannelsCategory(`${categoryId}`);
+    await live.goToChannel(channelId);
     await browser.pause(5000);
     const channelUrl = await live.getChannelUrl();
     const response = await fetch(channelUrl, {
         method: 'get'
     });
-    let content = await response.text();
-    const lines = content.split(/\r\n|\r|\n/);
-    console.log(`number of lines: ${lines.length}`);
-    if(lines.length == 6){
-        // UNLOCK HD
-        const hdPlaylist = lines[4].replace('PROFILE03.m3u8', 'PROFILE05.m3u8');
-        const hdAvailable = await fetch(hdPlaylist, {
-            method: 'get'
-        });
-        if(hdAvailable.status != 404){
-            console.log('HD Unlocked');
-            content = content + '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=4242784,RESOLUTION=1920x1080,CODECS="avc1.4d4028,mp4a.40.5"';
-            content = content + '\r\n';
-            content = content + hdPlaylist;
-        }        
-    }
+    const content = await playlistProcessor(await response.text());
     // change headers
     req.flash('totalplay.playlistContent', content);
     res.set({'Content-Type': 'application/x-mpegurl', 'content-disposition': 'inline;filename=f.txt', 'X-CDN': 'Imperva'});    
@@ -149,3 +132,63 @@ const isLoggedIn = async(browser: WebdriverIO.Browser): Promise<boolean> => {
     return cookies.length !== 0;
 };
 
+const playlistProcessor = async(content: string): Promise<string> => {
+    let playlist = content;
+    const lines = playlist.split(/\r\n|\r|\n/);
+    if(lines.length == 6){
+        // UNLOCK HD
+        const hdPlaylist = lines[4].replace('PROFILE03.m3u8', 'PROFILE05.m3u8');
+        const hdAvailable = await fetch(hdPlaylist, {
+            method: 'get'
+        });
+        
+        if(hdAvailable.status != 404){
+            console.log('HD Unlocked');
+            playlist = playlist + '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=4242784,RESOLUTION=1920x1080,CODECS="avc1.4d4028,mp4a.40.5"';
+            playlist = playlist + '\r\n';
+            playlist = playlist + hdPlaylist;
+        }        
+    }
+    return playlist;
+};
+
+const playlistModified = async(content: string): Promise<string> => {
+    const playlist = content;
+    const lines = playlist.split(/\r\n|\r|\n/);
+    console.log(`number of lines: ${lines.length}`);
+    const tokenRegex = /vxttoken\=(.+)\//g;
+    let modifiedPlaylist = '';
+    for(const l of lines){
+        if(l.startsWith('https://')){
+            const encodedstr = tokenRegex.exec(l);
+            if(encodedstr){
+                let decodedstr = decodeb64(encodedstr[1]);
+                decodedstr = decodedstr.replace(/CANAL(\d+)/g, 'CANAL205');
+                const replacedstr = encodeb64(decodedstr);
+                modifiedPlaylist += l.replace(/vxttoken\=(.+)\//g, `vxttoken=${replacedstr}/`).replace(/CANAL(\d+)/g, 'CANAL205');
+            }
+        }else{
+            modifiedPlaylist += l;
+        }
+        modifiedPlaylist += '\r\n';
+    }
+    const mlines = content.split(/\r\n|\r|\n/);
+    if(mlines.length == 6){
+        // UNLOCK HD
+        const hdPlaylist = mlines[4].replace('PROFILE03.m3u8', 'PROFILE05.m3u8');
+        const hdAvailable = await fetch(hdPlaylist, {
+            method: 'get'
+        });
+        
+        if(hdAvailable.status != 404){
+            console.log('HD Unlocked');
+            modifiedPlaylist = modifiedPlaylist + '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=4242784,RESOLUTION=1920x1080,CODECS="avc1.4d4028,mp4a.40.5"';
+            modifiedPlaylist = modifiedPlaylist + '\r\n';
+            modifiedPlaylist = modifiedPlaylist + hdPlaylist;
+        }        
+    }
+    return modifiedPlaylist;
+};
+
+const encodeb64 = (str: string): string => Buffer.from(str, 'binary').toString('base64');
+const decodeb64 = (str: string): string => Buffer.from(str, 'base64').toString();

@@ -2,28 +2,28 @@ extends layout
 
 block content
   .page-header
-    h3 Totalplay Live
+    h3 Totalplay TV
     hr
 
-  div.row
-    div.col-sm-12.col-xs-12.col-md-9.col-12
+  div.col-12.mb-3
+    form.row.gy-3.align-items-center#changeChannel(method='POST')
+      input(type='hidden', name='_csrf', value=_csrf)
+      div.col-sm-12.col-xs-12.col-md-3.col-12
+        div#livemessages.alert.alert-secondary.text-center.text-weight-bold.text-wrap.fw-bolder.my-0 Cargando...
+      div.col-sm-6.col-xs-6.col-md-3.col-6 
+        select.form-select.form-select-lg(name='category', id='category', autofocus=true)
+          option(value="", disabled="disabled", selected="selected") Categorias...
+      div.col-sm-6.col-xs-6.col-md-3.col-6 
+        select.form-select.form-select-lg(name='channel', id='channel', placeholder="Canal", autofocus=true)
+          option(value="",  disabled="disabled", selected="selected") Canales... 
+      div.col-sm-12.col-xs-12.col-md-3.col-12.d-grid.gap-2
+        button.btn.btn-lg.btn-outline-primary(type='submit')
+          i.fa.fa-tv
+          | Ver
+        
+  div.col-12
       div.ratio.ratio-16x9
         video.ratio-item#videoVideo.videoTV1(autoplay controls)
-    div.col-sm-12.col-xs-12.col-md-3.col-12
-      form#changeChannel(method='POST')
-        input(type='hidden', name='_csrf', value=_csrf)
-        div.mb-3 
-          label.form-label.font-weight-bold(for='category') Categoria
-          select.form-select.form-select-lg.mb-3(name='category', id='category', autofocus=true)
-        div.mb-3 
-          label.form-label.font-weight-bold(for='channel') Canal
-          select.form-select.form-select-lg.mb-3(name='channel', id='channel', autofocus=true)
-        div.my-3.d-grid.gap-2
-          button.btn.btn-block.btn-primary(type='submit')
-            i.fa.fa-chromecast
-            | Ver
-        div.mb-3 
-          div#livemessages.alert.alert-secondary.visually-hidden.alert-dismissible.fade
 
 append scripts
   script(async, defer,).
@@ -35,7 +35,9 @@ append scripts
       if(doHeartbeat){
         $.get("/api/v1/totalplay/heartbeat", function( data ) {
           if(loadChannels){
+            $("#category").html($("<option>", { 'text': 'Categorias...', 'value': '', 'disabled': 'disabled', 'selected': 'selected' }));
             $.get("/api/v1/totalplay/channels", function( data ) {
+              $("#category").html('');
               $(data.perCategories).each(function(i, e){
                 var option = $("<option>", {
                   'text': e.name,
@@ -46,36 +48,35 @@ append scripts
               categories = data;
               loadChannels = false;
               $("#category").trigger('change');
+              displayMessage('LISTO', 'alert-success');
             }).fail(function() {
-              displayMessage('Error al iniciar sesión...')
+              displayMessage('Error al mostrar canales...', 'alert-danger');
               loadChannels = true;              
             });
           }
         }).fail(function() {
-          displayMessage('Restaurando sesión...');
+          displayMessage('Restaurando sesión...', 'alert-info');
           doHeartbeat = false;
           $.get("/api/v1/totalplay/login", function( data ) {
-            displayMessage('Sesión restaurada...')
+            displayMessage('Sesión restaurada...', 'alert-success');
             doHeartbeat = true;       
           }).fail(function() {
-            displayMessage('Error al iniciar sesión...')
+            displayMessage('Error al iniciar sesión...', 'alert-danger');
             doHeartbeat = true;              
           });
         });
       }        
     }
 
-    function displayMessage(text = ''){
-      $('div#livemessages').toggleClass('visually-hidden').toggleClass('show').text(text);
-      setTimeout(function(){
-        $('div#livemessages').toggleClass('show');
-      }, 5000);
-      setTimeout(function(){
-        $('div#livemessages').toggleClass('visually-hidden')
-      }, 5500);
+    function displayMessage(text = '', color = 'alert-primary'){
+      $('div#livemessages').removeClass (function (index, css) {
+        return (css.match (/(^|\s)alert-\S+/g) || []).join(' ');
+      });
+      $('div#livemessages').toggleClass(color, true).text(text);
     }
 
     $('#category').on('change', function (e) {
+      $("#channel").html($("<option>", { 'text': 'Canales...', 'value': '', 'disabled': 'disabled', 'selected': 'selected' }));
       var optionSelected = $("option:selected", this);
       var valueSelected = this.value;
       if(categories != null){
@@ -105,11 +106,12 @@ append scripts
         e.preventDefault();
         var category = $('select#category option').filter(':selected').val();
         var channel = $('select#channel option').filter(':selected').val();
-        displayMessage('Cargando canal');
+        displayMessage('Cargando canal', 'alert-info');
         $.post('/api/v1/totalplay/live/' + category + '/' + parseInt(channel), function( data ) {
-          OpenHls('/api/v1/totalplay/live/cache', adelante);       
+          OpenHls('/api/v1/totalplay/live/cache', adelante);    
+          displayMessage('EN VIVO', 'alert-danger');
         }).fail(function() {
-          displayMessage('Error al cargar canal');
+          displayMessage('Error al cargar canal', 'alert-danger');
         });
         
       });

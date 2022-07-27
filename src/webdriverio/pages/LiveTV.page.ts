@@ -70,15 +70,15 @@ class LiveTV extends Base {
 		});
 	}    
 
-    public goToChannel = async (channel: number, previous: number): Promise<void> => {
+    public goToChannel = async (channel: number): Promise<void> => {
         await (await this.channelsContainer).waitForDisplayed({timeout: 10000});
         await this.browser.execute('window.scrollTo(0, document.body.scrollHeight);');
         await (await this.firstChannel).waitForDisplayed({timeout: 10000});
         await (await this.channelsContainer).click();
         const channelElement = await this.browser.$(`//div[@id='canalDiv${channel}']`);
-        const upOrDown = channel >= previous ? '\uE00F' : '\uE00E';
+        // const upOrDown = channel >= previous ? '\uE00F' : '\uE00E';
         while (!(await channelElement.isDisplayedInViewport())) {
-			await (await this.channelsContainer).setValue(upOrDown);
+			await (await this.channelsContainer).setValue('\uE00F');
 			await this.browser.pause(200);
 		}
         await channelElement.waitForExist();
@@ -110,6 +110,12 @@ class LiveTV extends Base {
 
         return '';
     }
+
+    public pauseTransmission = async (): Promise<void> => {
+		if(await (await this.pauseVideo).isExisting()){
+            await (await this.pauseVideo).click();
+        }
+	};
 
     public setChannelsCategory = async (categoryId: string): Promise<void> => {
 		const categoryPicker = await this.channelsCombo;

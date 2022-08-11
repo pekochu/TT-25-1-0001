@@ -50,9 +50,12 @@ app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/ip', apiController.getIp);
 app.get('/api/v1/screenshot', apiController.getScreenshot);
 app.get('/api/v1/totalplay/login', totalplayController.totalplayLogin);
-app.get('/api/v1/totalplay/channels/', totalplayController.totalplayChannels);
-app.post('/api/v1/totalplay/live/:categoryId/:channelId', totalplayController.totalplayLive);
+app.get('/api/v1/totalplay/categories/', totalplayController.totalplayCategories);
+app.get('/api/v1/totalplay/channels/:categoryId', totalplayController.totalplayChannels);
+app.post('/api/v1/totalplay/current/:channelId/:programId', totalplayController.totalplayCurrent);
+app.post('/api/v1/totalplay/live/:channelId/:programId', totalplayController.totalplayLive);
 app.get('/api/v1/totalplay/live/cache', totalplayController.totalplayLiveCache);
+app.get('/api/v1/totalplay/logo/:channelLogoId', totalplayController.totalplayChannelLogo);
 app.get('/api/v1/totalplay/heartbeat', totalplayController.totalplayHeartbeat);
 
 export default app;

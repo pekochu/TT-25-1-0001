@@ -2,60 +2,63 @@ extends layout
 
 append styles
   link(rel='stylesheet', href='https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css')
+  link(rel='stylesheet', href='https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css')
+  style.
+    #list-channels { height: 350px }
 
 block content
   .page-header
     h3 Totalplay TV
     hr
 
-  div.col-12.mb-3
-    form.row.gy-3.align-items-center#changeChannel(method='POST')
-      input(type='hidden', name='_csrf', value=_csrf)
-      div.col-sm-12.col-xs-12.col-md-3.col-12
-        div#livemessages.alert.alert-secondary.text-center.text-weight-bold.text-wrap.fw-bolder.my-0 Cargando...
-      div.col-sm-6.col-xs-6.col-md-3.col-6 
-        select.form-select.form-select-lg(name='category', id='category', autofocus=true)
-          option(value="", disabled="disabled", selected="selected") Categorias...
-      div.col-sm-6.col-xs-6.col-md-3.col-6 
-        select.form-select.form-select-lg(name='channel', id='channel', placeholder="Canal", autofocus=true)
-          option(value="",  disabled="disabled", selected="selected") Canales... 
-      div.col-sm-12.col-xs-12.col-md-3.col-12.d-grid.gap-2
-        button.btn.btn-lg.btn-outline-primary(type='submit')
-          i.fa.fa-tv
-          | Ver
-        
-  div.col-12
-      div.ratio.ratio-16x9
-        video.ratio-item#videoVideo.videoTV1(autoplay controls)
+  div.row
+    div.col-4.mb-3
+      form.row.gy-3.align-items-center#changeChannel(method='POST')
+        input(type='hidden', name='_csrf', value=_csrf)
+        input(type='hidden', name='_channel', value=0)
+        input(type='hidden', name='_program', value=0)
+        div.col-12
+          div#livemessages.alert.alert-secondary.text-center.text-weight-bold.text-wrap.fw-bolder.my-0 Cargando...
+        div.col-12
+          select.form-select.form-select-lg(name='category', id='category', autofocus=true)
+            option(value="", disabled="disabled", selected="selected") Categorias...
+        div.col-12.d-grid.gap-1
+          button.btn.btn-lg.btn-secondary#channels-toggle(data-toggle='collapse', data-target='#collapse-channels', type="button", aria-expanded="false", aria-controls="collapse-channels", disabled="disabled")
+           | Canales...
+          div.collapse#collapse-channels
+            div.list-group.overflow-auto#list-channels
+          
+    div.col-8
+        div.ratio.ratio-16x9
+          video.ratio-item#videoVideo.videoTV1(autoplay controls)
 
 append scripts
-  script(src='https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js')
+  script(src='https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js')
   script(async, defer,).
     var doHeartbeat = true;
-    var loadChannels = true;
-    var categories = null;
-    var categorySelected = -1;
+    var loadCategories = true;
+    var adelante = 0;
+  
     function heartbeat(){
       if(doHeartbeat){
         $.get("/api/v1/totalplay/heartbeat", function( data ) {
-          if(loadChannels){
+          if(loadCategories){
             $("#category").html($("<option>", { 'text': 'Categorias...', 'value': '', 'disabled': 'disabled', 'selected': 'selected' }));
-            $.get("/api/v1/totalplay/channels", function( data ) {
+            $.get("/api/v1/totalplay/categories", function( data ) {
               $("#category").html('');
-              $(data.perCategories).each(function(i, e){
+              $(data.categories).each(function(i, e){
                 var option = $("<option>", {
                   'text': e.name,
-                  'value': e.categoryId
+                  'value': e.value
                 });
                 $("#category").append(option);                
               });
-              categories = data;
-              loadChannels = false;
+              loadCategories = false;
               $("#category").trigger('change');
               displayMessage('LISTO', 'alert-success');
             }).fail(function() {
-              displayMessage('Error al mostrar canales...', 'alert-danger');
-              loadChannels = true;              
+              displayMessage('Error al mostrar categorias...', 'alert-danger');
+              loadCategories = true;              
             });
           }
         }).fail(function() {
@@ -70,7 +73,7 @@ append scripts
           });
         });
       }        
-    }
+    };
 
     function displayMessage(text = '', color = 'alert-primary'){
       $('div#livemessages').removeClass (function (index, css) {
@@ -79,46 +82,128 @@ append scripts
       $('div#livemessages').toggleClass(color, true).text(text);
     }
 
+    function channelsStatus(color = 'btn-primary'){
+      $('button#channels-toggle').removeClass (function (index, css) {
+        return (css.match (/(^|\s)btn-(primary|secondary|success|danger|warning|info|light|dark|link)/g) || []).join(' ');
+      });
+      $('button#channels-toggle').toggleClass(color, true);
+    }
+
     $('#category').on('change', function (e) {
-      $("#channel").html($("<option>", { 'text': 'Canales...', 'value': '', 'disabled': 'disabled', 'selected': 'selected' }));
       var optionSelected = $("option:selected", this);
       var valueSelected = this.value;
-      if(categories != null){
-        $(categories.perCategories).each(function(i, e){
-          if(e.categoryId == valueSelected){
-            $("#channel").html('');
-            $(e.channels).each(function(e, i){
-              var option = $("<option>", {
-                'text': i,
-                'value': i
-              });
-              $("#channel").append(option);
-            });
+      channelsStatus('btn-dark');
+      $('#channels-toggle').attr("disabled", "disabled");
+      $.get("/api/v1/totalplay/channels/" + valueSelected, function( data ) {   
+        $('div#list-channels').html('');
+        $(data.select2).each(function(i, e){  
+          if(e.liveCode == undefined){
+            $('div#list-channels').append(
+              $('<a>', {
+                class: 'list-group-item list-group-item-action flex-row align-items-start disabled',
+              }).append($('<div>', { class: 'row' }).append(
+                $('<div>', {
+                  class: 'col-2 p-1 h-100 align-items-center align-middle'
+                }).append($('<img>', { class: 'align-middle w-100', src: '/api/v1/totalplay/logo/' + e.imgSrc }))
+              )
+              .append(
+                $('<div>', {
+                  class: 'col-10 p-1 flex-column'
+                }).append(
+                  $('<div>', {
+                    class: 'd-flex w-100 justify-content-between'
+                  }).append($('<h5>', {class: 'mb-1'}).html("Canal " + e.channel))
+                ).append($('<p>', {class: 'mb-1'}).html("No disponible"))
+              )
+            ));
+          } else {
+            $('div#list-channels').append(
+              $('<a>', {
+                class: 'list-group-item list-group-item-action align-items-start',
+                'data-target': 'live',
+                'data-toggle': 'list',
+                'data-channel': e.channel,
+                'data-program': e.liveCode
+              }).append($('<div>', { class: 'row d-flex align-items-stretch' }).append(
+                $('<div>', {
+                  class: 'col-2 p-1 text-center d-table'
+                }).append($('<img>', { class: 'd-table-cell h-auto w-100 align-middle', src: '/api/v1/totalplay/logo/' + e.imgSrc }))
+              )
+              .append(
+                $('<div>', {
+                  class: 'col-10 p-1 flex-column'
+                }).append(
+                  $('<div>', {
+                    class: 'd-flex w-100 justify-content-between'
+                  }).append($('<h5>', {class: 'mb-1'}).html("Canal " + e.channel))
+                ).append($('<p>', {class: 'mb-1'}).html(e.currentProgram))
+              )
+            ));
           }
         });
-        
-      }
+        $('#channels-toggle').removeAttr("disabled");
+        channelsStatus('btn-info');
+        $('a[data-target="live"]').on('click', function (e) {
+          e.preventDefault();
+          var program = $(this).attr('data-program');
+          var channel = $(this).attr('data-channel');
+          displayMessage('Cargando canal', 'alert-info');
+          $.post('/api/v1/totalplay/live/' + parseInt(channel) + '/' + parseInt(program), function( data ) {
+            try {        
+              OpenHls('/api/v1/totalplay/live/cache', adelante);   
+            } catch (err) {
+              displayMessage(err, 'alert-danger');
+            }         
+            displayMessage('EN VIVO', 'alert-danger');
+          }).fail(function() {
+            displayMessage('Error al cargar canal', 'alert-danger');
+          });      
+        });
+        //- $("#channels").select2({
+        //-   theme: 'bootstrap-5',
+        //-   debug: true,
+        //-   dropdownAutoWidth: true,
+        //-   placeholder: "Canales",
+        //-   data: data.select2,
+        //-   escapeMarkup: function (markup) {
+        //-     return markup;
+        //-   }, // let our custom formatter work
+        //-   templateResult: function (repo) { // The format of the result set displayed, where you need to write your own css style, can refer to demo
+        //-     // Retrieving
+        //-     if (repo.loading)
+        //-       return "Cargando...";
+
+        //-     var markup = "<div class='row g-0 align-items-center clearfix'>" + "<div class='col-3 g-0'><img src='" +
+        //-       "https://imgn.cdn.iutpcdn.com/IMGS/CHANNEL/SUPER_LIGHT/531197-8c.png" + "' width='100%' /></div>" + "<div class='col-9 g-0 fs-6'>";
+
+        //-     if (repo.channel) {
+        //-       markup += "<div class='fs-5 fw-bold'>Canal " + repo.channel + "</div>";
+        //-     }
+
+        //-     markup += "<div class='fw-light'>" + repo.currentProgram +
+        //-       "</div>" + "</div></div>";
+
+        //-     return markup;
+        //-   },
+        //-   templateSelection: function (repo) {
+        //-     if(repo.channel == undefined){
+        //-       return 'Selecciona un canal...';
+        //-     }
+        //-     var markup = "<div class='row g-0 align-items-center clearfix'>" + "<div class='col-1 g-0'><img src='" +
+        //-       "https://imgn.cdn.iutpcdn.com/IMGS/CHANNEL/SUPER_LIGHT/531197-8c.png" + "' width='50' /></div>" + "<div class='col-11 g-0'>" +
+        //-       "<div class='select2-result-repository__title'>" + repo.currentProgram + "</div></div>";
+
+        //-     return markup;
+        //-   } // The content that appears in the text box when an item is selected in the list
+        //- });
+        displayMessage('LISTO', 'alert-success');
+      }).fail(function() {
+        displayMessage('Error al mostrar canales...', 'alert-danger');        
+      });
     });
 
     $(document).ready(function(){
       heartbeat();
       setInterval(heartbeat, 10000);
     });
-    try {        
-      var adelante = 0;
-      $("#changeChannel").submit(function(e){
-        e.preventDefault();
-        var category = $('select#category option').filter(':selected').val();
-        var channel = $('select#channel option').filter(':selected').val();
-        displayMessage('Cargando canal', 'alert-info');
-        $.post('/api/v1/totalplay/live/' + category + '/' + parseInt(channel), function( data ) {
-          OpenHls('/api/v1/totalplay/live/cache', adelante);    
-          displayMessage('EN VIVO', 'alert-danger');
-        }).fail(function() {
-          displayMessage('Error al cargar canal', 'alert-danger');
-        });
-        
-      });
-    } catch (err) {
-      QuitarEsperaPLUGIN();
-    }
+    

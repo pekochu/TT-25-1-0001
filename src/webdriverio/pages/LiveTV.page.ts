@@ -12,6 +12,16 @@ export interface ChannelsArray{
     channels: string[];
 }
 
+export interface Select2Results{
+    id: number;
+    categoryId: number;
+    categoryName: string;
+    channel: string;
+    imgSrc?: string;
+    liveCode?: string;
+    currentProgram?: string;
+}
+
 class LiveTV extends Base {
 
     // Interceptor variables
@@ -25,7 +35,7 @@ class LiveTV extends Base {
         { name:'Infantiles', value: 5 },
         { name:'Mundo y Cultura', value: 6 },
         { name:'Cine', value: 7 },
-        { name:'Deportes', value: 3 },
+        { name:'Deporte Total', value: 3 },
         { name:'Noticias', value: 2 },
         { name:'Internacionales', value: 9 },
         { name:'Musica', value: 9 },

@@ -37,17 +37,23 @@ class Dashboard extends Base {
 	}
 
 	public checkLimitSessionReached = async (): Promise<boolean> => {
-		if(await (await this.sessionsLimit).isDisplayed()){
-			await this.waitRandomTime();
-			await (await this.closeAllSessions).click();
-			await (await this.confirmCloseAllSessions).waitForClickable();
-			await this.waitRandomTime();
-			await (await this.confirmCloseAllSessions).click();
-			await (await this.gotItButton).waitForClickable({timeout: 10000});
-			await this.waitRandomTime();
-			await (await this.gotItButton).click();
-			return true;
-		}
+		try{
+			if(await (await this.sessionsLimit).waitForDisplayed({timeout: 6000})){
+				console.log('Closing all sessions now...');
+				await this.waitRandomTime();
+				await (await this.closeAllSessions).click();
+				await (await this.confirmCloseAllSessions).waitForClickable();
+				await this.waitRandomTime();
+				await (await this.confirmCloseAllSessions).click();
+				await (await this.gotItButton).waitForClickable({timeout: 10000});
+				await this.waitRandomTime();
+				await (await this.gotItButton).click();
+				return true;
+			}			
+		} catch (e){
+			console.log('Logged in successfully.');
+		} 
+
 		return false;
 	}
 

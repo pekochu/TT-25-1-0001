@@ -4,11 +4,11 @@ import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 import { Response, Request, NextFunction } from 'express';
-import { TOTALPLAY_PASS, TOTALPLAY_USER } from '@app/util/secrets';
-import remote from '@webdriver/browser';
-import Dashboard from '@webdriver/pages/Dashboard.page';
-import Login from '@webdriver/pages/Login.page';
-import LiveTV, { ChannelsArray } from '@webdriver/pages/LiveTV.page';
+import { TOTALPLAY_PASS, TOTALPLAY_USER } from '@project/server/app/util/secrets';
+import remote from '@project/server/webdriver/browser';
+import Dashboard from '@project/server/webdriver/pages/Dashboard.page';
+import Login from '@project/server/webdriver/pages/Login.page';
+import LiveTV, { ChannelsArray } from '@project/server/webdriver/pages/LiveTV.page';
 
 const screenshotpath = './screenshot/';
 /**

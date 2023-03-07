@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./webdriver-server/dist/"
+    },
+    "types": [
+        "node",
+        "@wdio/globals/types",
+        "@types/jest"
+    ],
+    "include": [
+        "./webdriver-server/src/**/*",
+        "./webdriver-server/test/**/*"
+    ]
+}

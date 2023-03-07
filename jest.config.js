@@ -12,7 +12,7 @@ module.exports = {
         '^.+\\.(ts|tsx)$': 'ts-jest'
     },
     testMatch: [
-        '**/test/**/*.test.(ts)'
+        'webdriver-server/test/**/*.test.(ts)'
     ],
     testEnvironment: 'node',
     testTimeout: 120000

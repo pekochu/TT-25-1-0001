@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "./frontend/dist/"
+    },
+    "types": [
+        "node",
+        "@types/jest"
+    ],
+    "include": [
+        "./frontend/src/**/*",
+        "./frontend/test/**/*"
+    ]
+}

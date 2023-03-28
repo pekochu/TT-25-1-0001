@@ -18,8 +18,6 @@ const app = express();
 
 // Express configuration
 app.set('port', process.env.SERVER_PORT || 3000);
-app.set('views', path.join(__dirname, '../../views'));
-app.set('view engine', 'pug');
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

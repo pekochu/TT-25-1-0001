@@ -4,6 +4,7 @@ import session from 'express-session';
 import lusca from 'lusca';
 import flash from 'express-flash';
 import path from 'path';
+import createWebDriverInstancePerSession from './webdriverio/webdriver-middleware';
 import httpStatus from 'http-status';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
 // Controllers (route handlers)
@@ -12,6 +13,7 @@ import * as apiController from '@project/server/app/controllers/api';
 import * as totalplayController from '@project/server/app/controllers/totalplay';
 import * as contactController from '@project/server/app/controllers/contact';
 import ApiError from '@project/server/app/util/apierror';
+import { start } from 'chromedriver';
 
 // Create Express server
 const app = express();
@@ -22,23 +24,28 @@ app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    resave: true,
-    saveUninitialized: true,
-    secret: SESSION_SECRET || 'eaeaea!'
+  resave: true,
+  saveUninitialized: true,
+  secret: SESSION_SECRET || 'eaeaea!'
 }));
 app.use(flash());
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
-
+app.use(createWebDriverInstancePerSession);
 app.use(
-    express.static(path.join(__dirname, '../public'), { maxAge: 31557600000 })
+  express.static(path.join(__dirname, '../public'), { maxAge: 31557600000 })
 );
+
+app.disable('x-powered-by');
 
 /**
  * API examples routes.
  */
 app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/ip', apiController.getIp);
+app.get('/api/v1/session', apiController.testSession);
+app.get('/api/v1/goto', apiController.goToUrl);
 app.get('/api/v1/screenshot', apiController.getScreenshot);
 
+start(['--port=4444']);
 export default app;

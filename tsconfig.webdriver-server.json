@@ -6,6 +6,7 @@
     "types": [
         "node",
         "@wdio/globals/types",
+        "wdio-image-comparison-service",
         "@types/jest"
     ],
     "include": [

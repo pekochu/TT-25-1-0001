@@ -7,6 +7,8 @@ import session from "express-session-types";
 
 declare module "express-session" {
     export interface SessionData {
+        browserId: string;
+        pageViews: number;
         returnTo: string;
     }
 }

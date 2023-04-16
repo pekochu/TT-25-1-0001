@@ -1,1 +1,3 @@
-export default new Map<string, WebdriverIO.Browser>();
+import { WebDriver } from 'selenium-webdriver';
+
+export default new Map<string, WebDriver>();

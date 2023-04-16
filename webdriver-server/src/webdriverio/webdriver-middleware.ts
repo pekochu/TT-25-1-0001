@@ -1,38 +1,23 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import {Express, Request, Response, NextFunction} from 'express';
-import { remote } from 'webdriverio';
 import logger from '../util/logger';
 import WebdriverInstances from './instances-webdriver';
+import { Options } from 'selenium-webdriver/chrome';
+import { Builder, Capabilities } from 'selenium-webdriver';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const WdioImageComparisonService = require('wdio-image-comparison-service').default;
 // Your custom "middleware" function:
 export default async function createWebDriverInstancePerSession(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     if(!req.session.browserId){
       if(!WebdriverInstances.has(req.session.id)){
-        const wdioImageComparisonService = new WdioImageComparisonService({});
-        const browser = await remote({
-          capabilities: {
-            browserName: 'chrome',
-            'goog:chromeOptions': {
-              args: ['no-sandbox', 'headless', 'disable-gpu', 'disable-dev-shm-usage', 'disable-notifications', 'window-size=1280,720', '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Safari/605.1.15"'],
-            },
-          },
-          automationProtocol: 'devtools',
-          logLevel: 'silent',
-        });
-        req.session.browserId = await browser.sessionId;
+        const chromeOptions = new Options();
+        chromeOptions.headless();
+        chromeOptions.windowSize({width: 1440, height: 1080});
+        const chromeCapabilities = Capabilities.chrome();
+        const driver = new Builder().forBrowser('chrome').setChromeOptions(chromeOptions).withCapabilities(chromeCapabilities).build();
+        const browser = await driver;
+        req.session.browserId = (await browser.getSession()).getId();
         logger.info(`Browser launched with id: ${req.session.browserId}`);
-        
-        wdioImageComparisonService.defaultOptions.autoSaveBaseline = true;
-        wdioImageComparisonService.defaultOptions.fullPageScrollTimeout = 5;
-        // @ts-ignore
-        browser.defaultOptions = wdioImageComparisonService.defaultOptions;
-        // @ts-ignore
-        browser.folders = wdioImageComparisonService.folders;
-        await wdioImageComparisonService.addCommandsToBrowser(browser.capabilities, browser);
-
         
         WebdriverInstances.set(req.session.id, browser);
       }

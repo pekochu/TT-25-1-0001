@@ -6,6 +6,7 @@ import fetch from 'node-fetch';
 import { Response, Request, NextFunction } from 'express';
 import globalRemote from '@project/server/webdriver/browser';
 import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
+import { WebDriver } from 'selenium-webdriver';
 import apierror from '@project/server/app/util/apierror';
 import { validationResult, check } from 'express-validator';
 import logger from '../util/logger';
@@ -37,8 +38,6 @@ export const testSession = async (req: Request, res: Response): Promise<void> =>
     req.session.pageViews++;
   }
   counter = req.session.pageViews;
-
-  const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
   res.json({sessionId: req.sessionID, browserId: req.session.browserId, counter: counter, session: req.session});
 };
 
@@ -53,8 +52,8 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
       return;
     }
     const url = req.query.url;
-    const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
-    await browser.url(url as string);   
+    const browser = WebdriverInstances.get(req.session.id) as WebDriver;
+    await browser.get(url as string);   
     res.json('OK');
   } catch(error){
     next(error);
@@ -63,13 +62,11 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
 };
 export const getScreenshot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
-    const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
+    const browser = WebdriverInstances.get(req.session.id) as WebDriver;
     // const image = await registerImageComparisonService(browser);
     const data = await browser.takeScreenshot();  
-    // const img = Buffer.from(data, 'base64');
-    await browser.execute('');
-    const full = await browser.saveFullPageScreen(req.session.id, {});
-    const img = fs.readFileSync(`${full.path}/${full.fileName}`);
+    
+    const img = Buffer.from(data, 'base64');
     res.writeHead(200, {
       'browser-id': req.session.browserId,
       'Content-Type': 'image/png',

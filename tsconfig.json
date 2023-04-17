@@ -30,7 +30,7 @@
 				"./webdriver-server/src/*"
 			],
 			"@project/server/webdriver/*": [
-				"./webdriver-server/src/webdriverio/*"
+				"./webdriver-server/src/webdriver/*"
 			]
 		},
 		"plugins": [

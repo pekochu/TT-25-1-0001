@@ -4,11 +4,11 @@ import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
 import { Response, Request, NextFunction } from 'express';
-import globalRemote from '@project/server/webdriver/browser';
 import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
 import apierror from '@project/server/app/util/apierror';
 import { validationResult, check } from 'express-validator';
 import logger from '../util/logger';
+import CaptureSnapshot from '../webdriverio/CaptureSnapshot';
 
 
 /**
@@ -16,17 +16,7 @@ import logger from '../util/logger';
  * @route GET /api
  */
 export const getApi = async (req: Request, res: Response): Promise<void> => {
-  res.json('Hello World!');
-  const browser = await globalRemote;
-  await browser.url('google.com.mx');    
-};
-
-export const getIp = async (req: Request, res: Response): Promise<void> => {
-  const browser = await globalRemote;
-  await browser.url('https://ipinfo.io/json');    
-  const content = await browser.$('pre').getText();
-  const obj = JSON.parse(content);
-  res.json({ip: obj.ip});
+  res.json({ title: 'TT Monitor :)' });   
 };
 
 export const testSession = async (req: Request, res: Response): Promise<void> => {
@@ -38,8 +28,7 @@ export const testSession = async (req: Request, res: Response): Promise<void> =>
   }
   counter = req.session.pageViews;
 
-  const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
-  res.json({sessionId: req.sessionID, browserId: req.session.browserId, counter: counter, session: req.session});
+  res.json({sessionId: req.sessionID, counter: counter, session: req.session});
 };
 
 export const goToUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -64,12 +53,10 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
 export const getScreenshot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
     const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
+    const captureSnapshot = new CaptureSnapshot(browser);
     // const image = await registerImageComparisonService(browser);
-    const data = await browser.takeScreenshot();  
+    const img = await captureSnapshot.getDevtoolsImage();
     // const img = Buffer.from(data, 'base64');
-    await browser.execute('');
-    const full = await browser.saveFullPageScreen(req.session.id, {});
-    const img = fs.readFileSync(`${full.path}/${full.fileName}`);
     res.writeHead(200, {
       'browser-id': req.session.browserId,
       'Content-Type': 'image/png',

@@ -7,18 +7,14 @@ import path from 'path';
 import createWebDriverInstancePerSession from './webdriverio/webdriver-middleware';
 import httpStatus from 'http-status';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
-// Controllers (route handlers)
+// Controladores (manejo de rutas)
 import * as homeController from '@project/server/app/controllers/home';
 import * as apiController from '@project/server/app/controllers/api';
-import * as totalplayController from '@project/server/app/controllers/totalplay';
-import * as contactController from '@project/server/app/controllers/contact';
-import ApiError from '@project/server/app/util/apierror';
-import { start } from 'chromedriver';
 
-// Create Express server
+// Crear servidor Express
 const app = express();
 
-// Express configuration
+// Configuracion de Express
 app.set('port', process.env.SERVER_PORT || 3000);
 app.use(compression());
 app.use(express.json());
@@ -36,16 +32,11 @@ app.use(
   express.static(path.join(__dirname, '../public'), { maxAge: 31557600000 })
 );
 
+// Deshabilitar header 'x-powered-by'
 app.disable('x-powered-by');
 
-/**
- * API examples routes.
- */
 app.get('/api/v1', apiController.getApi);
-app.get('/api/v1/ip', apiController.getIp);
 app.get('/api/v1/session', apiController.testSession);
 app.get('/api/v1/goto', apiController.goToUrl);
 app.get('/api/v1/screenshot', apiController.getScreenshot);
-
-start(['--port=4444']);
 export default app;

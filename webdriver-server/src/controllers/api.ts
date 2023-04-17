@@ -5,10 +5,10 @@ import path from 'path';
 import fetch from 'node-fetch';
 import { Response, Request, NextFunction } from 'express';
 import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
+import CaptureSnapshot from '@project/server/webdriver/CaptureSnapshot';
 import apierror from '@project/server/app/util/apierror';
 import { validationResult, check } from 'express-validator';
 import logger from '../util/logger';
-import CaptureSnapshot from '../webdriverio/CaptureSnapshot';
 
 
 /**

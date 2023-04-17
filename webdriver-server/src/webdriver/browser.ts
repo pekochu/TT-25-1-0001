@@ -1,3 +1,5 @@
+import WebDriverLogTypes, { RemoteOptions } from 'webdriverio';
+
 export default {
   capabilities: {
     browserName: 'chrome',
@@ -6,4 +8,4 @@ export default {
     },
   },
   logLevel: 'silent',
-};
+} as RemoteOptions;

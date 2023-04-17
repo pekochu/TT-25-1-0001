@@ -4,11 +4,10 @@ import session from 'express-session';
 import lusca from 'lusca';
 import flash from 'express-flash';
 import path from 'path';
-import createWebDriverInstancePerSession from './webdriverio/webdriver-middleware';
+import createWebDriverInstancePerSession from '@project/server/webdriver/webdriver-middleware';
 import httpStatus from 'http-status';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
 // Controladores (manejo de rutas)
-import * as homeController from '@project/server/app/controllers/home';
 import * as apiController from '@project/server/app/controllers/api';
 
 // Crear servidor Express

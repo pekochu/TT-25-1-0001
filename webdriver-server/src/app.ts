@@ -2,14 +2,19 @@ import express, { NextFunction } from 'express';
 import compression from 'compression';  // compresses requests
 import session from 'express-session';
 import lusca from 'lusca';
+import cors from 'cors';
 import flash from 'express-flash';
 import path from 'path';
 import createWebDriverInstancePerSession from '@project/server/webdriver/webdriver-middleware';
 import httpStatus from 'http-status';
+import dbInit from '@project/server/app/database/init';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
 // Controladores (manejo de rutas)
 import * as apiController from '@project/server/app/controllers/api';
+import * as userdataController from '@project/server/app/controllers/userdata';
 
+// Conexion a base de datos
+dbInit().finally();
 // Crear servidor Express
 const app = express();
 
@@ -23,10 +28,12 @@ app.use(session({
   saveUninitialized: true,
   secret: SESSION_SECRET || 'eaeaea!'
 }));
+app.use(cors({
+  origin: ['localhost:3001', 'http://localhost:3001'], credentials: true
+}));
 app.use(flash());
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
-app.use(createWebDriverInstancePerSession);
 app.use(
   express.static(path.join(__dirname, '../public'), { maxAge: 31557600000 })
 );
@@ -36,6 +43,8 @@ app.disable('x-powered-by');
 
 app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/session', apiController.testSession);
-app.get('/api/v1/goto', apiController.goToUrl);
-app.get('/api/v1/screenshot', apiController.getScreenshot);
+app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);
+app.get('/api/v1/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
+// Crear usuario
+app.post('/api/v1/user', userdataController.createUserData);
 export default app;

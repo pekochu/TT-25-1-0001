@@ -13,12 +13,13 @@ export default async function createWebDriverInstancePerSession(req: Request, re
       if(!WebdriverInstances.has(req.session.id)){
         const browser = await remote(browserConfig);
         req.session.browserId = await browser.sessionId;
-        logger.info(`Browser launched with id: ${req.session.browserId}`);
+        logger.info(`New session created: ${req.session.browserId}`);
+        logger.info(`${req.session.browserId} from ${req.url}`);
         // Registrar instancia en el diccionario
         WebdriverInstances.set(req.session.id, browser);
       }
     } else {
-      logger.info(`BrowserId: ${req.session.browserId}`);
+      logger.info(`${req.session.browserId} from ${req.url}`);
     }
     next();
   } catch (error) {

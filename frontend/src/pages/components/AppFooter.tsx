@@ -1,7 +1,4 @@
 import Container from 'react-bootstrap/Container';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export default function Footer() {
     return (

@@ -3,9 +3,6 @@ import Image from 'next/image';
 import AppNavbar from '@/pages/components/AppHeader';
 import Inicio from '@/pages/components/Inicio';
 import AppFooter from '@/pages/components/AppFooter';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
   return (

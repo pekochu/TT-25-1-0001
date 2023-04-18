@@ -6,7 +6,6 @@ import fetch from 'node-fetch';
 import { Response, Request, NextFunction } from 'express';
 import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
 import CaptureSnapshot from '@project/server/webdriver/CaptureSnapshot';
-import apierror from '@project/server/app/util/apierror';
 import { validationResult, check } from 'express-validator';
 import logger from '../util/logger';
 
@@ -19,16 +18,14 @@ export const getApi = async (req: Request, res: Response): Promise<void> => {
   res.json({ title: 'TT Monitor :)' });   
 };
 
-export const testSession = async (req: Request, res: Response): Promise<void> => {
-  let counter = 0;
+export const testSession = async (req: Request, res: Response): Promise<void> => {  
   if(!req.session.pageViews){
     req.session.pageViews = 1;
   } else {
     req.session.pageViews++;
   }
-  counter = req.session.pageViews;
 
-  res.json({sessionId: req.sessionID, counter: counter, session: req.session});
+  res.json({sessionId: req.sessionID, session: req.session});
 };
 
 export const goToUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

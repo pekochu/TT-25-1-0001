@@ -6,9 +6,10 @@ export interface PagesToTrackAttributes {
     uuid: string;
     url: string;
     descripcion?: string;
-    frecuencia: number;
+    frecuencia: string;
     diferenciaAlerta: number
     imageBasePath: string;
+    siguienteComprobacion: Date;
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date;
@@ -23,9 +24,10 @@ class PagesToTrack extends Model<PagesToTrackAttributes, PagesToTrackInput> impl
     public uuid!: string
     public url!: string
     public descripcion!: string
-    public frecuencia!: number
+    public frecuencia!: string
     public diferenciaAlerta!: number
     public imageBasePath!: string
+    public siguienteComprobacion!: Date
     // marcas de tiempo
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -55,7 +57,11 @@ PagesToTrack.init({
     allowNull: false
   },
   diferenciaAlerta: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
+    allowNull: false
+  },
+  siguienteComprobacion: {
+    type: DataTypes.DATE,
     allowNull: false
   },
   imageBasePath: {

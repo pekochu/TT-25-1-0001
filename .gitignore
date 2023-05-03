@@ -13,6 +13,9 @@ logs
 results
 tmp
 
+# Imagenes 
+webdriver-server/comparacion/**/*.png
+
 # Build
 frontend/public/css/main.css
 

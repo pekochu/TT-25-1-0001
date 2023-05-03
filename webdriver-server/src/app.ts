@@ -12,6 +12,7 @@ import { SESSION_SECRET } from '@project/server/app/util/secrets';
 // Controladores (manejo de rutas)
 import * as apiController from '@project/server/app/controllers/api';
 import * as userdataController from '@project/server/app/controllers/userdata';
+import * as pagestotrackController from '@project/server/app/controllers/pagestotrack';
 
 // Conexion a base de datos
 dbInit().finally();
@@ -45,6 +46,9 @@ app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/session', apiController.testSession);
 app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);
 app.get('/api/v1/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
+app.get('/api/v1/title', createWebDriverInstancePerSession, apiController.getTitlePage);
 // Crear usuario
 app.post('/api/v1/user', userdataController.createUserData);
+// Crear trabajo
+app.post('/api/v1/test', pagestotrackController.createPagesToTrack);
 export default app;

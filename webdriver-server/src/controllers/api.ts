@@ -7,7 +7,9 @@ import { Response, Request, NextFunction } from 'express';
 import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
 import CaptureSnapshot from '@project/server/webdriver/CaptureSnapshot';
 import { validationResult, check } from 'express-validator';
-import logger from '../util/logger';
+import logger from '@project/server/app/util/logger';
+import { SCREENSHOTS_DIR } from '@project/server/app/util/constants';
+import { InternalServerError } from '@project/server/app/util/apierror';
 
 
 /**
@@ -38,9 +40,21 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
       res.status(401).send({ statusCode: 401, errors: errors.array()});
       return;
     }
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }    
+
     const url = req.query.url;
-    const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
     await browser.url(url as string);   
+    await browser.waitUntil(
+      () => browser.execute(() => document.readyState === 'complete'),
+      {
+        timeout: 20 * 1000, // 20 segundos
+        timeoutMsg: 'Error al cargar sitio web'
+      }
+    );
     res.json('OK');
   } catch(error){
     next(error);
@@ -49,17 +63,35 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
 };
 export const getScreenshot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
-    const browser = WebdriverInstances.get(req.session.id) as WebdriverIO.Browser;
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
     const captureSnapshot = new CaptureSnapshot(browser);
-    // const image = await registerImageComparisonService(browser);
-    const img = await captureSnapshot.getDevtoolsImage();
-    // const img = Buffer.from(data, 'base64');
+    const img = await captureSnapshot.getDevtoolsImage();    
+    fs.writeFileSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), img, {});
     res.writeHead(200, {
       'browser-id': req.session.browserId,
       'Content-Type': 'image/png',
       'Content-Length': img.length
     });
-    res.end(img); 
+    res.end(img);
+     
+  } catch(error){
+    next(error);
+  }
+};
+
+export const getTitlePage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
+    const title = await browser.getTitle();
+    res.send({title: title});
   } catch(error){
     next(error);
   }

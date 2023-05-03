@@ -1,3 +1,5 @@
+import 'react-image-crop/dist/ReactCrop.css'
+
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -10,6 +12,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 import React, { useEffect, useId, useState } from 'react';
+import ReactCrop from 'react-image-crop'
 import { Headers } from 'node-fetch';
 
 export default function Inicio() {
@@ -25,10 +28,15 @@ export default function Inicio() {
   const emailGroupId = useId();
   const frecuenciaId = useId();
   const frecuenciaGroupId = useId();
+  const descripcionId = useId();
+  const descripcionGroupId = useId();
+  const diferenciaId = useId();
+  const diferenciaGroupId = useId();
 
   const [validated, setValidated] = useState(false);
   const [modalActive, setModalActive] = useState(false);
   const [userDataLoading, setUserDataLoading] = useState(false);
+  const [screenshotLoading, setScreenshotLoading] = useState(false);
   const [img, setImg] = useState('https://www.tutorials24x7.com/uploads/2020-05-23/files/1-tutorials24x7-chrome-full-page-screen-capture-page.png');
 
   const getSnapshot = async () => {
@@ -36,13 +44,15 @@ export default function Inicio() {
     const imageBlob = await res.blob();
     const imageObjectURL = URL.createObjectURL(imageBlob);
     setImg(imageObjectURL);
+    setScreenshotLoading(false);
   };
 
-  const handleSubmit = async (event: any) => {
+  const requestSnapshot = async (event: any) => {
     event.preventDefault();
     // Obtenemos el formulario
     const form = event.target;
     const urlParams = new URLSearchParams({ url: form.url.value });
+    setScreenshotLoading(true);
     // Solicitamos el screenshot del navegador
     const result = await fetch('http://localhost:3000/api/v1/goto?' + urlParams.toString(), { credentials: 'include', });
     await getSnapshot();
@@ -55,12 +65,11 @@ export default function Inicio() {
     const body = {
       nombre: `${form.nombre.value.replace(/\s/g, '')} ${form.apellido.value.replace(/\s/g, '')}`,
       email: `${form.email.value}`,
-      telefono: '5555555555'
+      telefono: ''
     }
     setUserDataLoading(true);
     // Registramos usuario
-    const headers = new Headers({ 'content-type': 'application/json' });
-    await fetch('http://localhost:3000/api/v1/user', { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: headers })
+    await fetch('http://localhost:3000/api/v1/user', { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
       .then((respose) => respose.json())
       .then((respose) => {
         console.log(respose.data)
@@ -99,7 +108,7 @@ export default function Inicio() {
             <Card.Body>
               <div className="py-1 my-1 text-center">
                 <div className="col-lg-9 mx-auto">
-                  <Form noValidate onSubmit={handleSubmit}>
+                  <Form noValidate onSubmit={requestSnapshot}>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                       <Form.Label htmlFor={urlId}>Introduce una URL</Form.Label>
                       <InputGroup className="mb-3">
@@ -107,7 +116,14 @@ export default function Inicio() {
                           ejemplo.com
                         </InputGroup.Text>
                         <Form.Control id={urlId} aria-describedby={urlGroupId} name="url" />
-                        <Button variant="primary" id="button-addon2" type='submit'>
+                        <Button variant="primary" id="button-addon2" type='submit' disabled={screenshotLoading}>
+                          {screenshotLoading ? <span><Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                          />&nbsp;</span> : null}
                           Aceptar
                         </Button>
                       </InputGroup>
@@ -122,24 +138,6 @@ export default function Inicio() {
               </Card>
               <div className="py-3 my-3">
                 <Form noValidate onSubmit={saveJob}>
-                  <div className="col-lg-9 mx-auto row">
-                    <div className="col-lg-6">
-                      <Form.Group className="mb-3" controlId={nombreId}>
-                        <Form.Label htmlFor={nombreGroupId}>Tu nombre</Form.Label>
-                        <InputGroup className="mb-3">
-                          <Form.Control id={nombreId} aria-describedby={nombreGroupId} name="nombre" placeholder='Juan' />
-                        </InputGroup>
-                      </Form.Group>
-                    </div>
-                    <div className="col-lg-6">
-                      <Form.Group className="mb-3" controlId={apellidoId}>
-                        <Form.Label htmlFor={apellidoGroupId}>Tu apellido</Form.Label>
-                        <InputGroup className="mb-3">
-                          <Form.Control id={apellidoId} aria-describedby={apellidoGroupId} name="apellido" placeholder='Perez' />
-                        </InputGroup>
-                      </Form.Group>
-                    </div>
-                  </div>
                   <div className="col-lg-9 mx-auto row">
                     <div className="col-lg-8">
                       <Form.Group className="mb-3" controlId={emailId}>
@@ -161,6 +159,32 @@ export default function Inicio() {
                             <option value="60">1 minuto</option>
                             <option value="300">5 minuto</option>
                             <option value="600">10 minuto</option>
+                          </Form.Select>
+                        </InputGroup>
+                      </Form.Group>
+                    </div>
+                  </div>
+                  <div className="col-lg-9 mx-auto row">
+                    <div className="col-lg-8">
+                      <Form.Group className="mb-3" controlId={descripcionId}>
+                        <Form.Label htmlFor={descripcionGroupId}>Breve descripción</Form.Label>
+                        <InputGroup className="mb-3">
+                          <Form.Control id={descripcionId} aria-describedby={descripcionGroupId} name="descripcion" placeholder='...' />
+                        </InputGroup>
+                      </Form.Group>
+                    </div>
+                    <div className="col-lg-4">
+                      <Form.Group className="mb-3" controlId={diferenciaId}>
+                        <Form.Label htmlFor={diferenciaGroupId}>Porcentaje de cambio</Form.Label>
+                        <InputGroup className="mb-3">
+                          <Form.Select aria-label="Selector para porcentaje de cambio" id={diferenciaId} aria-describedby={diferenciaGroupId} defaultValue={1} name="diferenciaAlerta">
+                            <option disabled={true}>Porcentaje de diferencia para aviso</option>
+                            <option value="0">Cualquier cambio</option>
+                            <option value="1">Pequeño (1%)</option>
+                            <option value="2">Mediano (10%)</option>
+                            <option value="3">Considerable (25%)</option>
+                            <option value="4">Grande (50%)</option>
+                            <option value="5">Enorme (80%)</option>
                           </Form.Select>
                         </InputGroup>
                       </Form.Group>
@@ -199,9 +223,28 @@ export default function Inicio() {
       </main>
       <Modal show={modalActive} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Registro completo</Modal.Title>
+          <Modal.Title>Ahora solo necesitamos tus datos</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Hemos registrado tus datos en nuestros registros. Comenzaremos con el monitoreo.</Modal.Body>
+        <Modal.Body>
+          <div className="col-lg-9 mx-auto row">
+            <div className="col-lg-6">
+              <Form.Group className="mb-3" controlId={nombreId}>
+                <Form.Label htmlFor={nombreGroupId}>Tu nombre</Form.Label>
+                <InputGroup className="mb-3">
+                  <Form.Control id={nombreId} aria-describedby={nombreGroupId} name="nombre" placeholder='Juan' disabled={true} />
+                </InputGroup>
+              </Form.Group>
+            </div>
+            <div className="col-lg-6">
+              <Form.Group className="mb-3" controlId={apellidoId}>
+                <Form.Label htmlFor={apellidoGroupId}>Tu apellido</Form.Label>
+                <InputGroup className="mb-3">
+                  <Form.Control id={apellidoId} aria-describedby={apellidoGroupId} name="apellido" placeholder='Perez' disabled={true} />
+                </InputGroup>
+              </Form.Group>
+            </div>
+          </div>
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Cerrar

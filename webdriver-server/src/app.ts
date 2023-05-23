@@ -46,7 +46,9 @@ app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/session', apiController.testSession);
 app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);
 app.get('/api/v1/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
+app.get('/api/v1/element/screenshot', createWebDriverInstancePerSession, apiController.getElementScreenshot);
 app.get('/api/v1/title', createWebDriverInstancePerSession, apiController.getTitlePage);
+app.post('/api/v1/move', createWebDriverInstancePerSession, apiController.pointAtElement);
 // Crear usuario
 app.post('/api/v1/user', userdataController.createUserData);
 // Crear trabajo

@@ -3,6 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
+import * as yup from 'yup';
 import { Response, Request, NextFunction } from 'express';
 import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
 import CaptureSnapshot from '@project/server/webdriver/CaptureSnapshot';
@@ -10,6 +11,8 @@ import { validationResult, check } from 'express-validator';
 import logger from '@project/server/app/util/logger';
 import { SCREENSHOTS_DIR } from '@project/server/app/util/constants';
 import { InternalServerError } from '@project/server/app/util/apierror';
+import { PNG } from 'pngjs';
+import { BASEIMAGE_DIR } from 'webdriver-server/dist/src/util/constants';
 
 
 /**
@@ -83,6 +86,36 @@ export const getScreenshot = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const getElementScreenshot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      elementIndex: yup.number().required('Por favor, introduce un indice de elemento')
+    });
+
+    await schema.validate(req.query, {abortEarly: true});
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
+    const elements = await browser.$$(':hover');
+    const pointedElement = elements[parseInt(req.query.elementIndex as string)];
+    const takenScreenshot = await browser.takeElementScreenshot(pointedElement.elementId, true);  
+    const img = Buffer.from(takenScreenshot, 'base64');
+    fs.writeFileSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), takenScreenshot, {encoding: 'base64'});
+    res.writeHead(200, {
+      'browser-id': req.session.browserId,
+      'Content-Type': 'image/png',
+      'Content-Length': img.length
+    });
+    res.end(img);
+     
+  } catch(error){
+    next(error);
+  }
+};
+
+
 export const getTitlePage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
     const webDriverInstance = WebdriverInstances.get(req.session.id);
@@ -96,3 +129,26 @@ export const getTitlePage = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 };
+
+export const pointAtElement = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      coordX: yup.number().required('Por favor, introduce una coordenada X'),
+      coordY: yup.number().required('Por favor, introduce una coordenada Y')
+    });
+
+    await schema.validate(req.body, {abortEarly: true});
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
+    await (await browser.$('body')).moveTo({xOffset: req.body.coordX, yOffset: req.body.coordY});
+    const elements = await browser.$$(':hover');
+    res.send({elements: elements});
+  } catch(error){
+    next(error);
+  }
+};
+
+

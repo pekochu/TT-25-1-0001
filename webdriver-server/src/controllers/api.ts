@@ -13,6 +13,7 @@ import { SCREENSHOTS_DIR } from '@project/server/app/util/constants';
 import { InternalServerError } from '@project/server/app/util/apierror';
 import { PNG } from 'pngjs';
 import { BASEIMAGE_DIR } from 'webdriver-server/dist/src/util/constants';
+import GenerateXpathExpression from '../webdriver/GenerateXpathExpression';
 
 
 /**
@@ -88,22 +89,26 @@ export const getScreenshot = async (req: Request, res: Response, next: NextFunct
 
 export const getElementScreenshot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
-    const schema = yup.object().shape({
-      elementIndex: yup.number().required('Por favor, introduce un indice de elemento')
+    const elementsSchema = yup.object().shape({
+      elementAncestor: yup.number().default(0),
+      elementId: yup.string().required('Se requiere el elementId'),
+      selector: yup.string().required(),
+      alias: yup.string().required()
     });
 
-    await schema.validate(req.query, {abortEarly: true});
+    await elementsSchema.validate(req.body, {abortEarly: true});
+    const foundElements = elementsSchema.cast(req.body);
     const webDriverInstance = WebdriverInstances.get(req.session.id);
     if(!webDriverInstance) {
       throw new InternalServerError('El navegador no fue inicializado');
     }   
     const browser = webDriverInstance.browser as WebdriverIO.Browser;
-    const elements = await browser.$$(':hover');
-    const pointedElement = elements[parseInt(req.query.elementIndex as string)];
-    const takenScreenshot = await browser.takeElementScreenshot(pointedElement.elementId, true);  
+    const xpath = `${foundElements.selector}${'/..'.repeat(foundElements.elementAncestor)}`;
+    const specificElement = await browser.$(xpath);
+    const takenScreenshot = await browser.takeElementScreenshot(specificElement.elementId, true);  
     const img = Buffer.from(takenScreenshot, 'base64');
-    fs.writeFileSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), takenScreenshot, {encoding: 'base64'});
     res.writeHead(200, {
+      'x-escomonitor-xpath': xpath,
       'browser-id': req.session.browserId,
       'Content-Type': 'image/png',
       'Content-Length': img.length
@@ -125,6 +130,90 @@ export const getTitlePage = async (req: Request, res: Response, next: NextFuncti
     const browser = webDriverInstance.browser as WebdriverIO.Browser;
     const title = await browser.getTitle();
     res.send({title: title});
+  } catch(error){
+    next(error);
+  }
+};
+
+export const getElementsByNameOrXpath = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      query: yup.string().required('Por favor, introduce una expresión XPATH o cualquier otro string')
+    });
+
+    await schema.validate(req.body, {abortEarly: true});
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
+    const isXpathValid = (await browser.$$(req.body.query as string)).length > 0;
+    let selectorAlias: string;
+    const xpath = [];
+    if(isXpathValid){
+      xpath.push(req.body.query);
+      selectorAlias = req.body.query;
+    } else {
+      const generateXpathExpression = new GenerateXpathExpression(browser);
+      selectorAlias = `//*[name(.) and contains(text(), '${req.body.query}')]`;
+      const elements = await browser.$$(selectorAlias);
+      console.log(`Elementos encontrados inicialmente: ${elements.length}`);
+      for(const element of elements){
+        const xpathResult = await generateXpathExpression.getXpath(element);
+        xpath.push(xpathResult);   
+      }
+    }
+
+    const finalElements = [];
+    for(const selector of xpath){
+      const elements = await browser.$$(selector);
+      if(elements.length > 5) continue;
+      for(let i = 0; i < elements.length; i++){
+        const elementRect = await browser.getElementRect(elements[i].elementId);
+        const elementTagName = await elements[i].getTagName();
+        const elementInnerText = await elements[i].getText();        
+        (elements[i] as any).rect = elementRect;
+        (elements[i] as any).alias = selectorAlias;
+        if(elementRect.height > 0 && elementRect.width > 0) {
+          const betterXpath = `//*[name(.) = '${elementTagName}' and contains(text(), '${elementInnerText}')]`;
+          const testBetterXpath = await browser.$$(betterXpath);
+          console.log(betterXpath);
+          if(testBetterXpath.length == 1) (elements[i] as any).selector = betterXpath;
+          finalElements.push(elements[i]);
+        }      
+      }
+    }
+    
+    res.send({elements: finalElements});
+  } catch(error){
+    next(error);
+  }
+};
+
+export const getAllVisibleInputs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const selector = `//input`;
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
+
+    const finalElements = [];
+    const elements = await browser.$$(selector);
+    for(let i = 0; i < elements.length; i++){
+      const elementRect = await browser.getElementRect(elements[i].elementId);
+      const elementTagName = await elements[i].getTagName();
+      const elementInputName = await elements[i].getAttribute('name');
+      (elements[i] as any).rect = elementRect;
+      (elements[i] as any).selector = `//${elementTagName}[@name='${elementInputName}']`;
+      (elements[i] as any).alias = selector;
+      if(elementRect.height > 0 && elementRect.width > 0) {
+        finalElements.push(elements[i]);
+      }      
+    }
+    
+    res.send({elements: finalElements});
   } catch(error){
     next(error);
   }

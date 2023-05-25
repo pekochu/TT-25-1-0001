@@ -13,7 +13,6 @@ import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
 import React, { useEffect, useId, useState } from 'react';
 import ReactCrop from 'react-image-crop'
-import { Headers } from 'node-fetch';
 
 export default function Inicio() {
 

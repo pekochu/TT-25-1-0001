@@ -54,7 +54,7 @@ class GenerateXpathExpression {
   private readonly genXpathExpression = `
   (function(d, nodeElement) {
     function pekomonitorGetXpath(e){let o=e;o&&o.id;let n=[];for(;o&&Node.ELEMENT_NODE===o.nodeType;){let e=0,i=!1,r=o.previousSibling;for(;r;)r.nodeType!==Node.DOCUMENT_TYPE_NODE&&r.nodeName===o.nodeName&&e++,r=r.previousSibling;for(r=o.nextSibling;r;){if(r.nodeName===o.nodeName){i=!0;break}r=r.nextSibling}let t=o.prefix?o.prefix+":":"",N=e||i?"["+(e+1)+"]":"";n.push(t+o.localName+N),o=o.parentNode}return n.length?"/"+n.reverse().join("/"):""}
-    return pekomonitorGetXpath(nodeElement, { ignoreId: true });
+    return pekomonitorGetXpath(nodeElement);
   }(document, arguments[0]));`;
 
   constructor(browser: WebdriverIO.Browser) {

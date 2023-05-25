@@ -1,7 +1,10 @@
 {
-  "name": "front",
-  "version": "0.1.0",
+  "name": "TT-23-2-0010 Backend",
+  "version": "0.4.0",
+  "description": "Sistema de monitoreo de cambios visuales y de texto en páginas web",
+  "author": "Luis Angel Bravo Lopez",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -21,5 +24,8 @@
     "react-dom": "18.2.0",
     "react-image-crop": "^10.0.9",
     "typescript": "5.0.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

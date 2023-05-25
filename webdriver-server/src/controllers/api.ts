@@ -12,7 +12,7 @@ import logger from '@project/server/app/util/logger';
 import { SCREENSHOTS_DIR } from '@project/server/app/util/constants';
 import { InternalServerError } from '@project/server/app/util/apierror';
 import { PNG } from 'pngjs';
-import { BASEIMAGE_DIR } from 'webdriver-server/dist/src/util/constants';
+import { BASEIMAGE_DIR } from '@project/server/app/util/constants';
 import GenerateXpathExpression from '../webdriver/GenerateXpathExpression';
 
 

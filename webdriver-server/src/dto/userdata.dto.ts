@@ -8,7 +8,7 @@ export type CreateUserDataDTO = {
 
 export type UpdateUserDataDTO = Optional<CreateUserDataDTO, 'email'>
 
-export type FilterUserDatasDTO = {
+export type FilterUserDataDTO = {
     isDeleted?: boolean
     includeDeleted?: boolean
 }

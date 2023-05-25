@@ -4,4 +4,6 @@ interface ListFilters {
 }
 
 export type GetAllUserData = ListFilters
+export type GetAllUserMagicTokensData = ListFilters
 export type GetAllPagesToTrackData = ListFilters
+export type GetAllScheduledTrackingResultsData = ListFilters

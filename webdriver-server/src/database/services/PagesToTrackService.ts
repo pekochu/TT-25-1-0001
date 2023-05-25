@@ -14,10 +14,6 @@ export const getById = (id: number): Promise<PagesToTrackOutput> => {
   return pagestotrackDal.getById(id);
 };
 
-export const getByComprobacion = (): Promise<PagesToTrackOutput[]> => {
-  return pagestotrackDal.getByComprobacion();
-};
-
 export const deleteById = (id: number): Promise<boolean> => {
   return pagestotrackDal.deleteById(id);
 };

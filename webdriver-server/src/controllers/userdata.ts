@@ -7,10 +7,9 @@ import * as yup from 'yup';
 import logger from '@project/server/app/util/logger';
 import { Response, Request, NextFunction } from 'express';
 import { ValidationError, BadRequestError } from '@project/server/app/util/apierror';
-import { validationResult, check } from 'express-validator';
-import { CreateUserDataDTO } from '@project/server/app/dto/userdata.dto';
 import { create } from '@project/server/app/database/services/UserDataService';
-import { UserDataAttributes } from '@project/server/app/models/UserData';
+import { UserData } from '@project/server/app/models';
+import { CreationAttributes } from 'sequelize';
 
 export const createUserData = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
@@ -25,9 +24,9 @@ export const createUserData = async (req: Request, res: Response, next: NextFunc
       throw new ValidationError();
     }
 
-    const payload:CreateUserDataDTO = req.body;
+    const payload:CreationAttributes<UserData> = req.body;
 
-    const result = await create(payload as UserDataAttributes);
+    const result = await create(payload);
     if(!result) {
       throw (new BadRequestError('Este usuario ya existe'));
     } else {

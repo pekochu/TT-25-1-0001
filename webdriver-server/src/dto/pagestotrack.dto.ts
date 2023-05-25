@@ -6,7 +6,7 @@ export type CreatePagesToTrackDTO = {
     frecuencia: string;
     diferenciaAlerta: number;
     imageBasePath: string;
-    siguienteComprobacion: Date;
+    userId: number;
 }
 
 export type UpdatePagesToTrackDTO = Optional<CreatePagesToTrackDTO, 'descripcion'>

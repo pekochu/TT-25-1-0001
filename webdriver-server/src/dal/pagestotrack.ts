@@ -1,7 +1,7 @@
 import {Op} from 'sequelize';
 import {isEmpty} from 'lodash';
 
-import {PagesToTrack} from '@project/server/app/models';
+import {PagesToTrack, ScheduledTrackingResults} from '@project/server/app/models';
 import {GetAllPagesToTrackData} from '@project/server/app/dal/types';
 import {PagesToTrackInput, PagesToTrackOutput} from '@project/server/app/models/PagesToTrack';
 
@@ -24,24 +24,16 @@ export const update = async (id: number, payload: Partial<PagesToTrackInput>): P
 };
 
 export const getById = async (id: number): Promise<PagesToTrackOutput> => {
-  const pageToTrack = await PagesToTrack.findByPk(id);
-
-  if (!pageToTrack) {
-    // @todo throw custom error
-    throw new Error('not found');
-  }
-
-  return pageToTrack;
-};
-
-export const getByComprobacion = async (): Promise<PagesToTrackOutput[]> => {
-  const current = new Date();
-  const pageToTrack = await PagesToTrack.findAll({
-    where: {
-      siguienteComprobacion: {
-        [Op.eq]: current
-      }
-    }
+  const pageToTrack = await PagesToTrack.findByPk(id, {
+    include: [{
+      model: ScheduledTrackingResults,
+      limit: 10,
+      required: false,
+    }],
+    order: [
+      // We start the order array with the model we want to sort
+      [ScheduledTrackingResults, 'tiempoChequeo', 'ASC']
+    ]
   });
 
   if (!pageToTrack) {
@@ -65,6 +57,15 @@ export const getAll = async (filters?: GetAllPagesToTrackData): Promise<PagesToT
     where: {
       ...(filters?.isDeleted && {deletedAt: {[Op.not]: undefined}})
     },
-    ...((filters?.isDeleted || filters?.includeDeleted) && {paranoid: true})
+    ...((filters?.isDeleted || filters?.includeDeleted) && {paranoid: true}),
+    include: [{
+      model: ScheduledTrackingResults,
+      limit: 10,
+      required: false,
+    }],
+    order: [
+      // We start the order array with the model we want to sort
+      [ScheduledTrackingResults, 'tiempoChequeo', 'ASC']
+    ]
   });
 };

@@ -1,4 +1,5 @@
-import { DataTypes, Model, ModelStatic, Optional } from 'sequelize';
+import { DataTypes, ForeignKey, Model, ModelStatic, Optional } from 'sequelize';
+import { UserData } from '@project/server/app/models';
 import sequelizeConnection from '@project/server/app/database/config';
 
 export interface PagesToTrackAttributes {
@@ -9,7 +10,7 @@ export interface PagesToTrackAttributes {
     frecuencia: string;
     diferenciaAlerta: number
     imageBasePath: string;
-    siguienteComprobacion: Date;
+    userId: number;
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date;
@@ -27,7 +28,7 @@ class PagesToTrack extends Model<PagesToTrackAttributes, PagesToTrackInput> impl
     public frecuencia!: string
     public diferenciaAlerta!: number
     public imageBasePath!: string
-    public siguienteComprobacion!: Date
+    public userId!: ForeignKey<UserData['id']>;
     // marcas de tiempo
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -60,12 +61,12 @@ PagesToTrack.init({
     type: DataTypes.FLOAT,
     allowNull: false
   },
-  siguienteComprobacion: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
   imageBasePath: {
     type: DataTypes.STRING,
+    allowNull: false
+  },
+  userId: {
+    type: DataTypes.INTEGER.UNSIGNED,
     allowNull: false
   },
 }, {

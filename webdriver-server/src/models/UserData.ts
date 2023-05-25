@@ -1,30 +1,16 @@
-import { DataTypes, Model, ModelStatic, Optional } from 'sequelize';
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import sequelizeConnection from '@project/server/app/database/config';
 
-export interface UserDataAttributes {
-    id: number;
-    nombre: string;
-    email: string;
-    telefono?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    deletedAt?: Date;
-}
-
-export type UserDataInput = Optional<UserDataAttributes, 'id'>
-
-export type UserDataOutput = Required<UserDataAttributes>
-
-class UserData extends Model<UserDataAttributes, UserDataInput> implements UserDataAttributes {
-    public id!: number
-    public nombre!: string
-    public email!: string
-    public telefono!: string
+class UserData extends Model<InferAttributes<UserData>, InferCreationAttributes<UserData>> {
+    declare id: CreationOptional<number>
+    declare nombre: string
+    declare email: string
+    declare telefono: CreationOptional<string>
     
     // marcas de tiempo
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-    public readonly deletedAt!: Date;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+    declare deletedAt: CreationOptional<Date>;
 }
 
 UserData.init({
@@ -45,6 +31,9 @@ UserData.init({
   telefono: {
     type: DataTypes.STRING
   },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+  deletedAt: DataTypes.DATE,
 }, {
   sequelize: sequelizeConnection,
   paranoid: true

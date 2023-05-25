@@ -38,7 +38,7 @@ class Login extends Base {
 	  }
 	  await this.waitRandomTime();
 	  await this.buttonSubmit.click();
-	  await this.modalLoad.waitForDisplayed({reverse: true, timeout: 10000, interval: 800});
+	  await this.modalLoad.waitForDisplayed({ reverse: true, timeout: 10000, interval: 800 });
 	};
 }
 

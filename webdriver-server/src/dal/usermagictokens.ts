@@ -1,8 +1,8 @@
-import {Op} from 'sequelize';
+import { Op } from 'sequelize';
 
-import {UserMagicTokens, UserData} from '@project/server/app/models';
-import {GetAllUserMagicTokensData} from '@project/server/app/dal/types';
-import {UserMagicTokensInput, UserMagicTokensOutput} from '@project/server/app/models/UserMagicTokens';
+import { UserMagicTokens, UserData } from '@project/server/app/models';
+import { GetAllUserMagicTokensData } from '@project/server/app/dal/types';
+import { UserMagicTokensInput, UserMagicTokensOutput } from '@project/server/app/models/UserMagicTokens';
 
 export const create = async (payload: UserMagicTokensInput): Promise<UserMagicTokensOutput> => {
   const token = await UserMagicTokens.create(payload);
@@ -40,7 +40,7 @@ export const getById = async (id: number): Promise<UserMagicTokensOutput> => {
 
 export const deleteById = async (id: number): Promise<boolean> => {
   const deletedCount = await UserMagicTokens.destroy({
-    where: {id}
+    where: { id }
   });
 
   return !!deletedCount;
@@ -49,9 +49,9 @@ export const deleteById = async (id: number): Promise<boolean> => {
 export const getAll = async (filters?: GetAllUserMagicTokensData): Promise<UserMagicTokensOutput[]> => {
   return UserMagicTokens.findAll({
     where: {
-      ...(filters?.isDeleted && {deletedAt: {[Op.not]: undefined}})
+      ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })
     },
-    ...((filters?.isDeleted || filters?.includeDeleted) && {paranoid: true}),
+    ...((filters?.isDeleted || filters?.includeDeleted) && { paranoid: true }),
     include: [{
       model: UserData,
       required: false,

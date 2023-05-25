@@ -81,9 +81,9 @@ class LiveTV extends Base {
     }    
 
     public goToChannel = async (channel: number): Promise<void> => {
-      await (await this.channelsContainer).waitForDisplayed({timeout: 10000});
+      await (await this.channelsContainer).waitForDisplayed({ timeout: 10000 });
       await this.browser.execute('window.scrollTo(0, document.body.scrollHeight);');
-      await (await this.firstChannel).waitForDisplayed({timeout: 10000});
+      await (await this.firstChannel).waitForDisplayed({ timeout: 10000 });
       await (await this.channelsContainer).click();
       const channelElement = await this.browser.$(`//div[@id='canalDiv${channel}']`);
       // const upOrDown = channel >= previous ? '\uE00F' : '\uE00E';
@@ -93,7 +93,7 @@ class LiveTV extends Base {
       }
       await channelElement.waitForExist();
       const liveContent = await this.browser.$(`//div[@id='canalDiv${channel}']//div[@class='showProgressLive']`);
-      await liveContent.waitForDisplayed({timeout: 10000});
+      await liveContent.waitForDisplayed({ timeout: 10000 });
       await this.waitRandomTime();
       const play = await this.browser.$(`${liveContent.selector}/following-sibling::div[@class='showIconPlay']`);
       await this.waitRandomTime();
@@ -129,7 +129,7 @@ class LiveTV extends Base {
 
     public setChannelsCategory = async (categoryId: string): Promise<void> => {
       const categoryPicker = await this.channelsCombo;
-      await categoryPicker.waitForClickable({timeout: 10000});
+      await categoryPicker.waitForClickable({ timeout: 10000 });
       await categoryPicker.selectByAttribute('value', categoryId);
       await this.waitRandomTime();
     };

@@ -1,8 +1,8 @@
-import {Attributes, ModelAttributeColumnOptions, CreationAttributes, Op} from 'sequelize';
-import {isEmpty} from 'lodash';
+import { Attributes, ModelAttributeColumnOptions, CreationAttributes, Op } from 'sequelize';
+import { isEmpty } from 'lodash';
 
-import {PagesToTrack, ScheduledTrackingResults, UserData} from '@project/server/app/models';
-import {GetAllScheduledTrackingResultsData} from '@project/server/app/dal/types';
+import { PagesToTrack, ScheduledTrackingResults, UserData } from '@project/server/app/models';
+import { GetAllScheduledTrackingResultsData } from '@project/server/app/dal/types';
 
 export const create = async (payload: CreationAttributes<ScheduledTrackingResults>): Promise<Attributes<ScheduledTrackingResults>> => {
   const scheduled = await ScheduledTrackingResults.create(payload);
@@ -68,7 +68,7 @@ export const getByTiempoChequeo = async (): Promise<ScheduledTrackingResults[]> 
 
 export const deleteById = async (id: number): Promise<boolean> => {
   const deletedCount = await ScheduledTrackingResults.destroy({
-    where: {id}
+    where: { id }
   });
 
   return !!deletedCount;
@@ -77,9 +77,9 @@ export const deleteById = async (id: number): Promise<boolean> => {
 export const getAll = async (filters?: GetAllScheduledTrackingResultsData): Promise<Attributes<ScheduledTrackingResults>[]> => {
   return ScheduledTrackingResults.findAll({
     where: {
-      ...(filters?.isDeleted && {deletedAt: {[Op.not]: undefined}})
+      ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })
     },
-    ...((filters?.isDeleted || filters?.includeDeleted) && {paranoid: true}),
+    ...((filters?.isDeleted || filters?.includeDeleted) && { paranoid: true }),
     include: [{
       model: PagesToTrack,
       required: false,

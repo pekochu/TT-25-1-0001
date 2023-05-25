@@ -23,7 +23,7 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
       diferenciaAlerta: yup.number().required('Requerimos de un porcentaje de diferencia para enviar alertas'),
     });
 
-    await schema.validate(req.body, {abortEarly: true});
+    await schema.validate(req.body, { abortEarly: true });
     // Sumar segundos a la fecha
     const currentDate = new Date();
     currentDate.setSeconds(currentDate.getSeconds() + parseInt(req.body.frecuencia));

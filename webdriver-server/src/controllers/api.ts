@@ -31,7 +31,7 @@ export const testSession = async (req: Request, res: Response): Promise<void> =>
     req.session.pageViews++;
   }
 
-  res.json({sessionId: req.sessionID, session: req.session});
+  res.json({ sessionId: req.sessionID, session: req.session });
 };
 
 export const goToUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -41,7 +41,7 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
 
     if (!errors.isEmpty()) {
       req.flash('errors', errors.array());
-      res.status(401).send({ statusCode: 401, errors: errors.array()});
+      res.status(401).send({ statusCode: 401, errors: errors.array() });
       return;
     }
     const webDriverInstance = WebdriverInstances.get(req.session.id);
@@ -96,7 +96,7 @@ export const getElementScreenshot = async (req: Request, res: Response, next: Ne
       alias: yup.string().required()
     });
 
-    await elementsSchema.validate(req.body, {abortEarly: true});
+    await elementsSchema.validate(req.body, { abortEarly: true });
     const foundElements = elementsSchema.cast(req.body);
     const webDriverInstance = WebdriverInstances.get(req.session.id);
     if(!webDriverInstance) {
@@ -129,7 +129,7 @@ export const getTitlePage = async (req: Request, res: Response, next: NextFuncti
     }   
     const browser = webDriverInstance.browser as WebdriverIO.Browser;
     const title = await browser.getTitle();
-    res.send({title: title});
+    res.send({ title: title });
   } catch(error){
     next(error);
   }
@@ -141,7 +141,7 @@ export const getElementsByNameOrXpath = async (req: Request, res: Response, next
       query: yup.string().required('Por favor, introduce una expresión XPATH o cualquier otro string')
     });
 
-    await schema.validate(req.body, {abortEarly: true});
+    await schema.validate(req.body, { abortEarly: true });
     const webDriverInstance = WebdriverInstances.get(req.session.id);
     if(!webDriverInstance) {
       throw new InternalServerError('El navegador no fue inicializado');
@@ -184,7 +184,7 @@ export const getElementsByNameOrXpath = async (req: Request, res: Response, next
       }
     }
     
-    res.send({elements: finalElements});
+    res.send({ elements: finalElements });
   } catch(error){
     next(error);
   }
@@ -213,7 +213,7 @@ export const getAllVisibleInputs = async (req: Request, res: Response, next: Nex
       }      
     }
     
-    res.send({elements: finalElements});
+    res.send({ elements: finalElements });
   } catch(error){
     next(error);
   }
@@ -226,15 +226,15 @@ export const pointAtElement = async (req: Request, res: Response, next: NextFunc
       coordY: yup.number().required('Por favor, introduce una coordenada Y')
     });
 
-    await schema.validate(req.body, {abortEarly: true});
+    await schema.validate(req.body, { abortEarly: true });
     const webDriverInstance = WebdriverInstances.get(req.session.id);
     if(!webDriverInstance) {
       throw new InternalServerError('El navegador no fue inicializado');
     }   
     const browser = webDriverInstance.browser as WebdriverIO.Browser;
-    await (await browser.$('body')).moveTo({xOffset: req.body.coordX, yOffset: req.body.coordY});
+    await (await browser.$('body')).moveTo({ xOffset: req.body.coordX, yOffset: req.body.coordY });
     const elements = await browser.$$(':hover');
-    res.send({elements: elements});
+    res.send({ elements: elements });
   } catch(error){
     next(error);
   }

@@ -75,12 +75,12 @@ export async function ejecutarDiferenciaDeImagenes(): Promise<void> {
             const img = await captureSnapshot.getDevtoolsImage();    
             browser.deleteSession();
             const baseimg = PNG.sync.read(fs.readFileSync(element.pagesToTrack?.imageBasePath as string));
-            const {width, height} = baseimg;
+            const { width, height } = baseimg;
             const testPath = path.join(CHECKIMAGE_DIR, `${browser.sessionId}-test.png`);
-            const testimg = PNG.sync.read(await sharp(img).extract({left: 0, top: 0, width: width, height: height}).png().toBuffer());
+            const testimg = PNG.sync.read(await sharp(img).extract({ left: 0, top: 0, width: width, height: height }).png().toBuffer());
             fs.writeFileSync(testPath, testimg.data, {});
-            const diff = new PNG({width, height});
-            const numDiffPixels = pixelmatch(baseimg.data, testimg.data, diff.data, width, height, {threshold: element.pagesToTrack?.diferenciaAlerta as number});
+            const diff = new PNG({ width, height });
+            const numDiffPixels = pixelmatch(baseimg.data, testimg.data, diff.data, width, height, { threshold: element.pagesToTrack?.diferenciaAlerta as number });
             const diffPath = path.join(DIFFIMAGE_DIR, `${browser.sessionId}-diff.png`);
             fs.writeFileSync(diffPath, PNG.sync.write(diff), {});
             // Sumar de nuevo los segundos

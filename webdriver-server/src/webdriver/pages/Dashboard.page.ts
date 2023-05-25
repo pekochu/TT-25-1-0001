@@ -32,20 +32,20 @@ class Dashboard extends Base {
   }
 
 	public ottvLinkClick = async (): Promise<void> => {
-	  await this.ottvLink.waitForClickable({timeout: 6000});
+	  await this.ottvLink.waitForClickable({ timeout: 6000 });
 	  this.ottvLink.click();
 	}
 
 	public checkLimitSessionReached = async (): Promise<boolean> => {
 	  try{
-	    if(await (await this.sessionsLimit).waitForDisplayed({timeout: 6000})){
+	    if(await (await this.sessionsLimit).waitForDisplayed({ timeout: 6000 })){
 	      console.log('Closing all sessions now...');
 	      await this.waitRandomTime();
 	      await (await this.closeAllSessions).click();
 	      await (await this.confirmCloseAllSessions).waitForClickable();
 	      await this.waitRandomTime();
 	      await (await this.confirmCloseAllSessions).click();
-	      await (await this.gotItButton).waitForClickable({timeout: 10000});
+	      await (await this.gotItButton).waitForClickable({ timeout: 10000 });
 	      await this.waitRandomTime();
 	      await (await this.gotItButton).click();
 	      return true;

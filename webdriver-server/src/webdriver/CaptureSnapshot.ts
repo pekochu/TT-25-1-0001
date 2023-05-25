@@ -47,7 +47,7 @@ class CaptureSnapshot {
   public getDevtoolsImage = async (): Promise<Buffer> => {
     const puppeteer = (await this.browser.getPuppeteer());
     const pages = await puppeteer.pages();
-    return pages[0].screenshot({fullPage: true});
+    return pages[0].screenshot({ fullPage: true });
   }
 }
 

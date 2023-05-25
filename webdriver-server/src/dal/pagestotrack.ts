@@ -1,9 +1,9 @@
-import {Op} from 'sequelize';
-import {isEmpty} from 'lodash';
+import { Op } from 'sequelize';
+import { isEmpty } from 'lodash';
 
-import {PagesToTrack, ScheduledTrackingResults} from '@project/server/app/models';
-import {GetAllPagesToTrackData} from '@project/server/app/dal/types';
-import {PagesToTrackInput, PagesToTrackOutput} from '@project/server/app/models/PagesToTrack';
+import { PagesToTrack, ScheduledTrackingResults } from '@project/server/app/models';
+import { GetAllPagesToTrackData } from '@project/server/app/dal/types';
+import { PagesToTrackInput, PagesToTrackOutput } from '@project/server/app/models/PagesToTrack';
 
 export const create = async (payload: PagesToTrackInput): Promise<PagesToTrackOutput> => {
   const pageToTrack = await PagesToTrack.create(payload);
@@ -46,7 +46,7 @@ export const getById = async (id: number): Promise<PagesToTrackOutput> => {
 
 export const deleteById = async (id: number): Promise<boolean> => {
   const deletedPagesToTrackCount = await PagesToTrack.destroy({
-    where: {id}
+    where: { id }
   });
 
   return !!deletedPagesToTrackCount;
@@ -55,9 +55,9 @@ export const deleteById = async (id: number): Promise<boolean> => {
 export const getAll = async (filters?: GetAllPagesToTrackData): Promise<PagesToTrackOutput[]> => {
   return PagesToTrack.findAll({
     where: {
-      ...(filters?.isDeleted && {deletedAt: {[Op.not]: undefined}})
+      ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })
     },
-    ...((filters?.isDeleted || filters?.includeDeleted) && {paranoid: true}),
+    ...((filters?.isDeleted || filters?.includeDeleted) && { paranoid: true }),
     include: [{
       model: ScheduledTrackingResults,
       limit: 10,

@@ -2,10 +2,10 @@ import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOpt
 import sequelizeConnection from '@project/server/app/database/config';
 
 class UserData extends Model<InferAttributes<UserData>, InferCreationAttributes<UserData>> {
-    declare id: CreationOptional<number>
-    declare nombre: string
-    declare email: string
-    declare telefono: CreationOptional<string>
+    declare id: CreationOptional<number>;
+    declare nombre: string;
+    declare email: string;
+    declare telefono: CreationOptional<string>;
     
     // marcas de tiempo
     declare createdAt: CreationOptional<Date>;

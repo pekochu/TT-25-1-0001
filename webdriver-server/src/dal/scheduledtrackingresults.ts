@@ -1,16 +1,14 @@
-import { Attributes, ModelAttributeColumnOptions, CreationAttributes, Op } from 'sequelize';
-import { isEmpty } from 'lodash';
-
+import { CreationAttributes, Op } from 'sequelize';
 import { PagesToTrack, ScheduledTrackingResults, UserData } from '@project/server/app/models';
 import { GetAllScheduledTrackingResultsData } from '@project/server/app/dal/types';
 
-export const create = async (payload: CreationAttributes<ScheduledTrackingResults>): Promise<Attributes<ScheduledTrackingResults>> => {
+export const create = async (payload: CreationAttributes<ScheduledTrackingResults>): Promise<ScheduledTrackingResults> => {
   const scheduled = await ScheduledTrackingResults.create(payload);
 
   return scheduled;
 };
 
-export const update = async (id: number, payload: Partial<CreationAttributes<ScheduledTrackingResults>>): Promise<Attributes<ScheduledTrackingResults>> => {
+export const update = async (id: number, payload: Partial<CreationAttributes<ScheduledTrackingResults>>): Promise<ScheduledTrackingResults> => {
   const scheduled = await ScheduledTrackingResults.findByPk(id);
 
   if (!scheduled) {
@@ -22,7 +20,7 @@ export const update = async (id: number, payload: Partial<CreationAttributes<Sch
   return updatedScheduledTrackingResults;
 };
 
-export const getById = async (id: number): Promise<Attributes<ScheduledTrackingResults>> => {
+export const getById = async (id: number): Promise<ScheduledTrackingResults> => {
   const scheduled = await ScheduledTrackingResults.findByPk(id, {
     include: [{
       model: PagesToTrack,
@@ -74,7 +72,7 @@ export const deleteById = async (id: number): Promise<boolean> => {
   return !!deletedCount;
 };
 
-export const getAll = async (filters?: GetAllScheduledTrackingResultsData): Promise<Attributes<ScheduledTrackingResults>[]> => {
+export const getAll = async (filters?: GetAllScheduledTrackingResultsData): Promise<ScheduledTrackingResults[]> => {
   return ScheduledTrackingResults.findAll({
     where: {
       ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })

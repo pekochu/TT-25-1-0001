@@ -15,23 +15,8 @@ import { PNG } from 'pngjs';
 import { BASEIMAGE_DIR } from '@project/server/app/util/constants';
 import GenerateXpathExpression from '../webdriver/GenerateXpathExpression';
 
-
-/**
- * List of API examples.
- * @route GET /api
- */
 export const getApi = async (req: Request, res: Response): Promise<void> => {
   res.json({ title: 'TT Monitor :)' });   
-};
-
-export const testSession = async (req: Request, res: Response): Promise<void> => {  
-  if(!req.session.pageViews){
-    req.session.pageViews = 1;
-  } else {
-    req.session.pageViews++;
-  }
-
-  res.json({ sessionId: req.sessionID, session: req.session });
 };
 
 export const goToUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

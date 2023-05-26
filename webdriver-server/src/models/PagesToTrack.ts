@@ -1,38 +1,20 @@
-import { DataTypes, ForeignKey, Model, ModelStatic, Optional } from 'sequelize';
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional, ForeignKey } from 'sequelize';
 import { UserData } from '@project/server/app/models';
 import sequelizeConnection from '@project/server/app/database/config';
 
-export interface PagesToTrackAttributes {
-    id: number;
-    uuid: string;
-    url: string;
-    descripcion?: string;
-    frecuencia: string;
-    diferenciaAlerta: number
-    imageBasePath: string;
-    userId: number;
-    createdAt?: Date;
-    updatedAt?: Date;
-    deletedAt?: Date;
-}
-
-export type PagesToTrackInput = Optional<PagesToTrackAttributes, 'id' | 'uuid'>
-
-export type PagesToTrackOutput = Required<PagesToTrackAttributes>
-
-class PagesToTrack extends Model<PagesToTrackAttributes, PagesToTrackInput> implements PagesToTrackAttributes {
-    public id!: number
-    public uuid!: string
-    public url!: string
-    public descripcion!: string
-    public frecuencia!: string
-    public diferenciaAlerta!: number
-    public imageBasePath!: string
-    public userId!: ForeignKey<UserData['id']>;
+class PagesToTrack extends Model<InferAttributes<PagesToTrack>, InferCreationAttributes<PagesToTrack>> {
+    declare id: CreationOptional<number>
+    declare uuid: string
+    declare url: string
+    declare descripcion: CreationOptional<string>
+    declare frecuencia: string
+    declare diferenciaAlerta: number
+    declare imageBasePath: string
+    declare userId: ForeignKey<UserData['id']>;
     // marcas de tiempo
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-    public readonly deletedAt!: Date;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+    declare deletedAt: CreationOptional<Date>;
 }
 
 PagesToTrack.init({
@@ -69,6 +51,9 @@ PagesToTrack.init({
     type: DataTypes.INTEGER.UNSIGNED,
     allowNull: false
   },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+  deletedAt: DataTypes.DATE,
 }, {
   sequelize: sequelizeConnection,
   paranoid: true

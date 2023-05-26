@@ -1,31 +1,18 @@
-import { DataTypes, ForeignKey, Model, ModelStatic, Optional } from 'sequelize';
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional, ForeignKey, NonAttribute } from 'sequelize';
 import { UserData } from '@project/server/app/models';
 import sequelizeConnection from '@project/server/app/database/config';
 
-export interface UserMagicTokensAttributes {
-    id: number;
-    token: string;
-    expirado: boolean;
-    userId: number;
-    createdAt?: Date;
-    updatedAt?: Date;
-    deletedAt?: Date;
-}
-
-export type UserMagicTokensInput = Optional<UserMagicTokensAttributes, 'id'>
-
-export type UserMagicTokensOutput = Required<UserMagicTokensAttributes>
-
-class UserMagicTokens extends Model<UserMagicTokensAttributes, UserMagicTokensInput> implements UserMagicTokensAttributes {
-    public id!: number
-    public token!: string
-    public expirado!: boolean
-    public userId!: ForeignKey<UserData['id']>
+class UserMagicTokens extends Model<InferAttributes<UserMagicTokens>, InferCreationAttributes<UserMagicTokens>> {
+    declare id: CreationOptional<number>;
+    declare token: string;
+    declare expirado: boolean;
+    declare userId: ForeignKey<UserData['id']>;
+    declare user?: NonAttribute<UserData>;
     
     // marcas de tiempo
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-    public readonly deletedAt!: Date;
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
+    declare deletedAt: CreationOptional<Date>;
 }
 
 UserMagicTokens.init({
@@ -47,6 +34,9 @@ UserMagicTokens.init({
     type: DataTypes.INTEGER.UNSIGNED,
     allowNull: false
   },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+  deletedAt: DataTypes.DATE,
 }, {
   sequelize: sequelizeConnection,
   paranoid: true

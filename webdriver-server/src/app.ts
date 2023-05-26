@@ -43,7 +43,6 @@ app.use(
 app.disable('x-powered-by');
 
 app.get('/api/v1', apiController.getApi);
-app.get('/api/v1/session', apiController.testSession);
 app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);
 app.get('/api/v1/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
 app.post('/api/v1/element/screenshot', createWebDriverInstancePerSession, apiController.getElementScreenshot);

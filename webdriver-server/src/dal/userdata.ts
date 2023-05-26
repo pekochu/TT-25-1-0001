@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash';
 
 import { UserData } from '@project/server/app/models';
 import { GetAllUserData } from '@project/server/app/dal/types';
-import { Attributes, CreationAttributes } from 'sequelize';
+import { CreationAttributes } from 'sequelize';
 
 export const create = async (payload: CreationAttributes<UserData>): Promise<UserData> => {
   const userData = await UserData.create(payload);
@@ -11,7 +11,7 @@ export const create = async (payload: CreationAttributes<UserData>): Promise<Use
   return userData;
 };
 
-export const findOrCreate = async (payload: CreationAttributes<UserData>): Promise<Attributes<UserData>> => {
+export const findOrCreate = async (payload: CreationAttributes<UserData>): Promise<UserData> => {
   const [userData] = await UserData.findOrCreate({
     where: {
       email: payload.email
@@ -22,7 +22,7 @@ export const findOrCreate = async (payload: CreationAttributes<UserData>): Promi
   return userData;
 };
 
-export const update = async (id: number, payload: Partial<CreationAttributes<UserData>>): Promise<Attributes<UserData>> => {
+export const update = async (id: number, payload: Partial<CreationAttributes<UserData>>): Promise<UserData> => {
   const userData = await UserData.findByPk(id);
 
   if (!userData) {
@@ -34,7 +34,7 @@ export const update = async (id: number, payload: Partial<CreationAttributes<Use
   return updatedUserData;
 };
 
-export const getById = async (id: number): Promise<Attributes<UserData>> => {
+export const getById = async (id: number): Promise<UserData> => {
   const ingredient = await UserData.findByPk(id);
 
   if (!ingredient) {
@@ -53,7 +53,7 @@ export const deleteById = async (id: number): Promise<boolean> => {
   return !!deletedUserDataCount;
 };
 
-export const getAll = async (filters?: GetAllUserData): Promise<Attributes<UserData>[]> => {
+export const getAll = async (filters?: GetAllUserData): Promise<UserData[]> => {
   return UserData.findAll({
     where: {
       ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })

@@ -8,6 +8,13 @@ export const create = async (payload: CreationAttributes<ScheduledTrackingResult
   return scheduled;
 };
 
+export const bulkCreate = async (payload: CreationAttributes<ScheduledTrackingResults>[]): Promise<ScheduledTrackingResults[]> => {
+  const scheduled = await ScheduledTrackingResults.bulkCreate(payload);
+
+  return scheduled;
+};
+
+
 export const update = async (id: number, payload: Partial<CreationAttributes<ScheduledTrackingResults>>): Promise<ScheduledTrackingResults> => {
   const scheduled = await ScheduledTrackingResults.findByPk(id);
 
@@ -24,10 +31,8 @@ export const getById = async (id: number): Promise<ScheduledTrackingResults> => 
   const scheduled = await ScheduledTrackingResults.findByPk(id, {
     include: [{
       model: PagesToTrack,
-      required: false,
     }, {
       model: UserData,
-      required: false,
     }]
   });
 
@@ -49,10 +54,8 @@ export const getByTiempoChequeo = async (): Promise<ScheduledTrackingResults[]> 
     },
     include: [{
       model: PagesToTrack,
-      required: false,
     }, {
       model: UserData,
-      required: false,
     }]
   });
 
@@ -80,10 +83,8 @@ export const getAll = async (filters?: GetAllScheduledTrackingResultsData): Prom
     ...((filters?.isDeleted || filters?.includeDeleted) && { paranoid: true }),
     include: [{
       model: PagesToTrack,
-      required: false,
     }, {
       model: UserData,
-      required: false,
     }]
   });
 };

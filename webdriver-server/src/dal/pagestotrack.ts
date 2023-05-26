@@ -1,17 +1,16 @@
-import { Op } from 'sequelize';
+import { CreationAttributes, Op } from 'sequelize';
 import { isEmpty } from 'lodash';
 
 import { PagesToTrack, ScheduledTrackingResults } from '@project/server/app/models';
 import { GetAllPagesToTrackData } from '@project/server/app/dal/types';
-import { PagesToTrackInput, PagesToTrackOutput } from '@project/server/app/models/PagesToTrack';
 
-export const create = async (payload: PagesToTrackInput): Promise<PagesToTrackOutput> => {
+export const create = async (payload: CreationAttributes<PagesToTrack>): Promise<PagesToTrack> => {
   const pageToTrack = await PagesToTrack.create(payload);
 
   return pageToTrack;
 };
 
-export const update = async (id: number, payload: Partial<PagesToTrackInput>): Promise<PagesToTrackOutput> => {
+export const update = async (id: number, payload: Partial<CreationAttributes<PagesToTrack>>): Promise<PagesToTrack> => {
   const pagesToTrack = await PagesToTrack.findByPk(id);
 
   if (!pagesToTrack) {
@@ -23,12 +22,10 @@ export const update = async (id: number, payload: Partial<PagesToTrackInput>): P
   return updatedPagesToTrack;
 };
 
-export const getById = async (id: number): Promise<PagesToTrackOutput> => {
+export const getById = async (id: number): Promise<PagesToTrack> => {
   const pageToTrack = await PagesToTrack.findByPk(id, {
     include: [{
       model: ScheduledTrackingResults,
-      limit: 10,
-      required: false,
     }],
     order: [
       // We start the order array with the model we want to sort
@@ -52,7 +49,7 @@ export const deleteById = async (id: number): Promise<boolean> => {
   return !!deletedPagesToTrackCount;
 };
 
-export const getAll = async (filters?: GetAllPagesToTrackData): Promise<PagesToTrackOutput[]> => {
+export const getAll = async (filters?: GetAllPagesToTrackData): Promise<PagesToTrack[]> => {
   return PagesToTrack.findAll({
     where: {
       ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })
@@ -60,8 +57,6 @@ export const getAll = async (filters?: GetAllPagesToTrackData): Promise<PagesToT
     ...((filters?.isDeleted || filters?.includeDeleted) && { paranoid: true }),
     include: [{
       model: ScheduledTrackingResults,
-      limit: 10,
-      required: false,
     }],
     order: [
       // We start the order array with the model we want to sort

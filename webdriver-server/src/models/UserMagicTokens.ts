@@ -6,6 +6,7 @@ class UserMagicTokens extends Model<InferAttributes<UserMagicTokens>, InferCreat
     declare id: CreationOptional<number>;
     declare token: string;
     declare expirado: boolean;
+    declare tipo: string;
     declare userId: ForeignKey<UserData['id']>;
     declare user?: NonAttribute<UserData>;
     
@@ -30,9 +31,14 @@ UserMagicTokens.init({
     allowNull: false,
     defaultValue: false
   },
+  tipo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'login'
+  },
   userId: {
     type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false
+    allowNull: true
   },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,

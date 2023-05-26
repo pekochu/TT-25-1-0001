@@ -10,21 +10,25 @@ import { ValidationError, BadRequestError } from '@project/server/app/util/apier
 import { validationResult, check } from 'express-validator';
 import { SCREENSHOTS_DIR, BASEIMAGE_DIR } from '@project/server/app/util/constants';
 import { CreatePagesToTrackDTO } from '@project/server/app/dto/pagestotrack.dto';
-import { create, getAll } from '@project/server/app/database/services/PagesToTrackService';
 import { CreationAttributes } from 'sequelize';
-import { PagesToTrack, ScheduledTrackingResults } from '@project/server/app/models';
+import { PagesToTrack, ScheduledTrackingResults, UserData } from '@project/server/app/models';
 
-export const createPagesToTrack = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createNewUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
     const schema = yup.object().shape({
       url: yup.string().url().required('Por favor, introduce una URL'),
+      nombre: yup.string().url().required('Por favor, introduce un nombre'),
       email: yup.string().email().required('Por favor, introduce una cadena de texto con formato de correo electronico'),
+      telefono: yup.string().min(10).max(10).required('Por favor, introduce una número de teléfono en el area de la Republica Mexicana'),
       frecuencia: yup.number().required('Por favor, introduce la frecuencia'),
       descripcion: yup.string().required('Por favor, introduce una breve descripcion'),
       diferenciaAlerta: yup.number().required('Requerimos de un porcentaje de diferencia para enviar alertas'),
     });
 
     await schema.validate(req.body, { abortEarly: true });
+    // Creamos el usuario
+    const userPayload: CreationAttributes<UserData> = req.body;
+    const userResult = await UserData.create(userPayload);
     // Sumar segundos a la fecha
     const currentDate = new Date();
     req.body.siguienteComprobacion = currentDate;
@@ -35,8 +39,8 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
     req.body.imageBasePath = newFileLocation;
     req.body.userId = 1;
     // Validar la peticion
-    const payload:CreatePagesToTrackDTO = req.body;
-    const result = await create(payload as CreationAttributes<PagesToTrack>);
+    const payload: CreationAttributes<PagesToTrack> = req.body;
+    const result = await PagesToTrack.create(payload);
     
 
     if(!result) {
@@ -53,20 +57,6 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
         });
       }
       ScheduledTrackingResults.bulkCreate(jobs);
-      res.status(201).send(result);
-    }
-  } catch(error){
-    next(error);
-  }
-  
-};
-
-export const getPagesToTrack = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try{
-    const result = await getAll({});
-    if(!result) {
-      throw (new BadRequestError('Error al obtener trabajos'));
-    } else {
       res.status(201).send(result);
     }
   } catch(error){

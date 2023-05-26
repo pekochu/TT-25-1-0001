@@ -54,4 +54,5 @@ app.get('/api/v1/inputElements', createWebDriverInstancePerSession, apiControlle
 app.post('/api/v1/user', userdataController.createUserData);
 // Crear trabajo
 app.post('/api/v1/test', pagestotrackController.createPagesToTrack);
+app.get('/api/v1/test', pagestotrackController.getPagesToTrack);
 export default app;

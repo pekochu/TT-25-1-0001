@@ -6,6 +6,7 @@ class UserData extends Model<InferAttributes<UserData>, InferCreationAttributes<
     declare nombre: string;
     declare email: string;
     declare telefono: CreationOptional<string>;
+    declare activo: CreationOptional<boolean>;
     
     // marcas de tiempo
     declare createdAt: CreationOptional<Date>;
@@ -25,11 +26,14 @@ UserData.init({
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+    allowNull: false
   },
   telefono: {
     type: DataTypes.STRING
+  },
+  activo: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,

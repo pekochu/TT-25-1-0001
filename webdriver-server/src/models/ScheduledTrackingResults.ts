@@ -1,14 +1,14 @@
-import { DataTypes, ForeignKey, Model, CreationOptional, Optional, NonAttribute, InferAttributes, InferCreationAttributes } from 'sequelize';
+import { DataTypes, ForeignKey, Model, CreationOptional, NonAttribute, InferAttributes, InferCreationAttributes } from 'sequelize';
 import { PagesToTrack, UserData } from '@project/server/app/models';
 import sequelizeConnection from '@project/server/app/database/config';
 
 class ScheduledTrackingResults extends Model<InferAttributes<ScheduledTrackingResults>, InferCreationAttributes<ScheduledTrackingResults>> {
     declare id: CreationOptional<number>
     declare uuid: CreationOptional<string>
-    declare descripcion: string
-    declare diferencia: number
-    declare imageChequeoPath: string
-    declare imageDiferenciaPath: string
+    declare descripcion: CreationOptional<string>
+    declare diferencia: CreationOptional<number>
+    declare imageChequeoPath: CreationOptional<string>
+    declare imageDiferenciaPath: CreationOptional<string>
     declare tiempoChequeo: Date
     declare userId: ForeignKey<UserData['id']>;
     declare user?: NonAttribute<UserData>;
@@ -33,19 +33,19 @@ ScheduledTrackingResults.init({
   },
   descripcion: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   diferencia: {
     type: DataTypes.FLOAT,
-    allowNull: false
+    allowNull: true
   },
   imageChequeoPath: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   imageDiferenciaPath: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   tiempoChequeo: {
     type: DataTypes.DATE,
@@ -53,11 +53,11 @@ ScheduledTrackingResults.init({
   },
   userId: {
     type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false
+    allowNull: true
   },
   pagesToTrackId: {
     type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false
+    allowNull: true
   },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,

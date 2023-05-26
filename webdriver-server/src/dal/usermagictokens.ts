@@ -1,16 +1,15 @@
-import { Op } from 'sequelize';
+import { CreationAttributes, Op } from 'sequelize';
 
 import { UserMagicTokens, UserData } from '@project/server/app/models';
 import { GetAllUserMagicTokensData } from '@project/server/app/dal/types';
-import { UserMagicTokensInput, UserMagicTokensOutput } from '@project/server/app/models/UserMagicTokens';
 
-export const create = async (payload: UserMagicTokensInput): Promise<UserMagicTokensOutput> => {
+export const create = async (payload: CreationAttributes<UserMagicTokens>): Promise<UserMagicTokens> => {
   const token = await UserMagicTokens.create(payload);
 
   return token;
 };
 
-export const update = async (id: number, payload: Partial<UserMagicTokensInput>): Promise<UserMagicTokensOutput> => {
+export const update = async (id: number, payload: Partial<CreationAttributes<UserMagicTokens>>): Promise<UserMagicTokens> => {
   const token = await UserMagicTokens.findByPk(id);
 
   if (!token) {
@@ -22,7 +21,7 @@ export const update = async (id: number, payload: Partial<UserMagicTokensInput>)
   return updatedToken;
 };
 
-export const getById = async (id: number): Promise<UserMagicTokensOutput> => {
+export const getById = async (id: number): Promise<UserMagicTokens> => {
   const scheduled = await UserMagicTokens.findByPk(id, {
     include: [{
       model: UserData,
@@ -46,7 +45,7 @@ export const deleteById = async (id: number): Promise<boolean> => {
   return !!deletedCount;
 };
 
-export const getAll = async (filters?: GetAllUserMagicTokensData): Promise<UserMagicTokensOutput[]> => {
+export const getAll = async (filters?: GetAllUserMagicTokensData): Promise<UserMagicTokens[]> => {
   return UserMagicTokens.findAll({
     where: {
       ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })

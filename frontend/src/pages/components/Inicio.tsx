@@ -1,4 +1,5 @@
 import 'react-image-crop/dist/ReactCrop.css'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -11,39 +12,36 @@ import Image from 'react-bootstrap/Image';
 import Accordion from 'react-bootstrap/Accordion';
 import Spinner from 'react-bootstrap/Spinner';
 import Modal from 'react-bootstrap/Modal';
+import Skeleton from 'react-loading-skeleton'
 import React, { useEffect, useId, useState } from 'react';
 import ReactCrop from 'react-image-crop'
+import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
 
 export default function Inicio() {
 
   const urlId = useId();
-  const urlGroupId = useId();
   const imgId = useId();
   const nombreId = useId();
-  const nombreGroupId = useId();
   const apellidoId = useId();
-  const apellidoGroupId = useId();
   const emailId = useId();
-  const emailGroupId = useId();
   const frecuenciaId = useId();
-  const frecuenciaGroupId = useId();
   const descripcionId = useId();
-  const descripcionGroupId = useId();
   const diferenciaId = useId();
-  const diferenciaGroupId = useId();
 
   const [validated, setValidated] = useState(false);
   const [modalActive, setModalActive] = useState(false);
   const [userDataLoading, setUserDataLoading] = useState(false);
   const [screenshotLoading, setScreenshotLoading] = useState(false);
-  const [img, setImg] = useState('https://www.tutorials24x7.com/uploads/2020-05-23/files/1-tutorials24x7-chrome-full-page-screen-capture-page.png');
+  const [verticalOverflow, setVerticalOverflow] = useState(false);
+  const [img, setImg] = useState('/imagen foto navegador.png');
 
   const getSnapshot = async () => {
-    const res = await fetch('http://localhost:3000/api/v1/screenshot', { credentials: 'include', });
+    const res = await fetch(generateApiUrl(API_SCREENSHOT_URL), { credentials: 'include', });
     const imageBlob = await res.blob();
     const imageObjectURL = URL.createObjectURL(imageBlob);
     setImg(imageObjectURL);
     setScreenshotLoading(false);
+    setVerticalOverflow(true);
   };
 
   const requestSnapshot = async (event: any) => {
@@ -108,14 +106,14 @@ export default function Inicio() {
               <div className="py-1 my-1 text-center">
                 <div className="col-lg-9 mx-auto">
                   <Form noValidate onSubmit={requestSnapshot}>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                      <Form.Label htmlFor={urlId}>Introduce una URL</Form.Label>
+                    <Form.Group className="mb-3" controlId={urlId}>
+                      <Form.Label>Introduce una URL</Form.Label>
                       <InputGroup className="mb-3">
-                        <InputGroup.Text id={urlGroupId}>
+                        <InputGroup.Text>
                           ejemplo.com
                         </InputGroup.Text>
-                        <Form.Control id={urlId} aria-describedby={urlGroupId} name="url" />
-                        <Button variant="primary" id="button-addon2" type='submit' disabled={screenshotLoading}>
+                        <Form.Control aria-describedby={urlId} name="url" />
+                        <Button variant="primary" type='submit' disabled={screenshotLoading}>
                           {screenshotLoading ? <span><Spinner
                             as="span"
                             animation="border"
@@ -131,8 +129,14 @@ export default function Inicio() {
                 </div>
               </div>
               <Card className='mx-auto col-lg-9'>
-                <Card.Body>
-                  <Image id={imgId} rounded={true} src={img} style={{ width: "100%", height: img ? "100%" : "32rem" }} />
+                <Card.Body className='p-0'>
+                  <div className='flex flex-1 rounded overflow-auto' style={{ height: verticalOverflow ? "28rem" : "auto" }} >
+                    <div className='relative'>
+                      {screenshotLoading ? <Skeleton style={{ height: "26rem" }} /> :
+                        <Image id={imgId} rounded={true} src={img} style={{ maxWidth: "100%", height: "auto" }} />}
+                    </div>
+                  </div>
+
                 </Card.Body>
               </Card>
               <div className="py-3 my-3">
@@ -140,17 +144,17 @@ export default function Inicio() {
                   <div className="col-lg-9 mx-auto row">
                     <div className="col-lg-8">
                       <Form.Group className="mb-3" controlId={emailId}>
-                        <Form.Label htmlFor={emailGroupId}>¿A dónde enviaremos las alertas?</Form.Label>
+                        <Form.Label>¿A dónde enviaremos las alertas?</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Control id={emailId} aria-describedby={emailGroupId} name="email" placeholder='ejemplo@gmail.com' />
+                          <Form.Control aria-describedby={emailId} name="email" placeholder='ejemplo@gmail.com' />
                         </InputGroup>
                       </Form.Group>
                     </div>
                     <div className="col-lg-4">
                       <Form.Group className="mb-3" controlId={frecuenciaId}>
-                        <Form.Label htmlFor={frecuenciaGroupId}>Frecuencia</Form.Label>
+                        <Form.Label>Frecuencia</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Select aria-label="Selector para frecuencias de monitoreo" id={frecuenciaId} aria-describedby={frecuenciaGroupId} defaultValue={60} name="frecuencia">
+                          <Form.Select aria-label="Selector para frecuencias de monitoreo" aria-describedby={frecuenciaId} defaultValue={60} name="frecuencia">
                             <option disabled={true}>Frecuencia de monitoreo</option>
                             <option value="5">5 segundos</option>
                             <option value="10">10 segundos</option>
@@ -166,17 +170,17 @@ export default function Inicio() {
                   <div className="col-lg-9 mx-auto row">
                     <div className="col-lg-8">
                       <Form.Group className="mb-3" controlId={descripcionId}>
-                        <Form.Label htmlFor={descripcionGroupId}>Breve descripción</Form.Label>
+                        <Form.Label>Breve descripción</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Control id={descripcionId} aria-describedby={descripcionGroupId} name="descripcion" placeholder='...' />
+                          <Form.Control aria-describedby={descripcionId} name="descripcion" placeholder='...' />
                         </InputGroup>
                       </Form.Group>
                     </div>
                     <div className="col-lg-4">
                       <Form.Group className="mb-3" controlId={diferenciaId}>
-                        <Form.Label htmlFor={diferenciaGroupId}>Porcentaje de cambio</Form.Label>
+                        <Form.Label>Porcentaje de cambio</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Select aria-label="Selector para porcentaje de cambio" id={diferenciaId} aria-describedby={diferenciaGroupId} defaultValue={1} name="diferenciaAlerta">
+                          <Form.Select aria-label="Selector para porcentaje de cambio" aria-describedby={diferenciaId} defaultValue={1} name="diferenciaAlerta">
                             <option disabled={true}>Porcentaje de diferencia para aviso</option>
                             <option value="0">Cualquier cambio</option>
                             <option value="1">Pequeño (1%)</option>
@@ -228,17 +232,17 @@ export default function Inicio() {
           <div className="col-lg-9 mx-auto row">
             <div className="col-lg-6">
               <Form.Group className="mb-3" controlId={nombreId}>
-                <Form.Label htmlFor={nombreGroupId}>Tu nombre</Form.Label>
+                <Form.Label>Tu nombre</Form.Label>
                 <InputGroup className="mb-3">
-                  <Form.Control id={nombreId} aria-describedby={nombreGroupId} name="nombre" placeholder='Juan' disabled={true} />
+                  <Form.Control aria-describedby={nombreId} name="nombre" placeholder='Juan' disabled={true} />
                 </InputGroup>
               </Form.Group>
             </div>
             <div className="col-lg-6">
               <Form.Group className="mb-3" controlId={apellidoId}>
-                <Form.Label htmlFor={apellidoGroupId}>Tu apellido</Form.Label>
+                <Form.Label>Tu apellido</Form.Label>
                 <InputGroup className="mb-3">
-                  <Form.Control id={apellidoId} aria-describedby={apellidoGroupId} name="apellido" placeholder='Perez' disabled={true} />
+                  <Form.Control aria-describedby={apellidoId} name="apellido" placeholder='Perez' disabled={true} />
                 </InputGroup>
               </Form.Group>
             </div>

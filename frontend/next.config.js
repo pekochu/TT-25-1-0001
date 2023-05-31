@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    apiBaseUrl: 'localhost:3000'
+    API_BASE_URL: process.env.API_BASE_URL
   },
   reactStrictMode: true,
 }

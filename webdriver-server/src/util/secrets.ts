@@ -18,6 +18,3 @@ if (!SESSION_SECRET) {
   logger.error('No client secret. Set SESSION_SECRET environment variable.');
   process.exit(1);
 }
-
-export const TOTALPLAY_USER = process.env.TOTALPLAY_USER || 'TotalplayUser';
-export const TOTALPLAY_PASS = process.env.TOTALPLAY_PASS || 'TotalplayPass';

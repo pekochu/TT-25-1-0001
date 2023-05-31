@@ -1,4 +1,4 @@
-import express, { NextFunction } from 'express';
+import express, { Response, Request, NextFunction } from 'express';
 import compression from 'compression';  // compresses requests
 import session from 'express-session';
 import lusca from 'lusca';
@@ -9,7 +9,9 @@ import createWebDriverInstancePerSession from '@project/server/webdriver/webdriv
 import httpStatus from 'http-status';
 import dbInit from '@project/server/app/database/init';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
+import { ApiError } from '@project/server/app/util/apierror';
 // Controladores (manejo de rutas)
+import * as loginController from '@project/server/app/controllers/login';
 import * as apiController from '@project/server/app/controllers/api';
 import * as userdataController from '@project/server/app/controllers/userdata';
 import * as pagestotrackController from '@project/server/app/controllers/pagestotrack';
@@ -39,9 +41,18 @@ app.use(
   express.static(path.join(__dirname, '../public'), { maxAge: 31557600000 })
 );
 
+// Manejador de error
+const errorHandler = (error: ApiError, req: Request, res: Response, next: NextFunction): void => {
+  const status = error.statusCode || 400;
+  res.status(status).send({ error: true, data: { ...error, ...{ message: error.message } } });
+};
+
 // Deshabilitar header 'x-powered-by'
 app.disable('x-powered-by');
 
+// Sesión y autenticación
+app.get('/api/v1/login', loginController.login);
+// Webdriver
 app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);
 app.get('/api/v1/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
@@ -55,4 +66,6 @@ app.post('/api/v1/user', userdataController.createUserData);
 // Crear trabajo
 app.post('/api/v1/test', pagestotrackController.createPagesToTrack);
 app.get('/api/v1/test', pagestotrackController.getPagesToTrack);
+
+app.use(errorHandler);
 export default app;

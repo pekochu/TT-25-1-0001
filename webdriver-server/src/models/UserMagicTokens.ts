@@ -5,7 +5,7 @@ import sequelizeConnection from '@project/server/app/database/config';
 class UserMagicTokens extends Model<InferAttributes<UserMagicTokens>, InferCreationAttributes<UserMagicTokens>> {
     declare id: CreationOptional<number>;
     declare token: string;
-    declare expirado: boolean;
+    declare expirado: CreationOptional<boolean>;
     declare tipo: string;
     declare userId: ForeignKey<UserData['id']>;
     declare user?: NonAttribute<UserData>;
@@ -28,12 +28,10 @@ UserMagicTokens.init({
   },
   expirado: {
     type: DataTypes.BOOLEAN,
-    allowNull: false,
     defaultValue: false
   },
   tipo: {
     type: DataTypes.STRING,
-    allowNull: false,
     defaultValue: 'login'
   },
   userId: {

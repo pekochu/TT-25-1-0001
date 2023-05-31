@@ -1,4 +1,4 @@
-import WebDriverLogTypes, { RemoteOptions } from 'webdriverio';
+import { RemoteOptions } from 'webdriverio';
 
 export default {
   capabilities: {

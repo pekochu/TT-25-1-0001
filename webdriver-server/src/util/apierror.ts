@@ -55,7 +55,7 @@ class BaseError extends Error {
   }
 }
 
-class ApiError extends BaseError {
+export class ApiError extends BaseError {
 
   constructor(message: string, statusCode: number, type: string, stack = '') {
     super(message, statusCode, type, true);

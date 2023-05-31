@@ -9,7 +9,6 @@ import { Response, Request, NextFunction } from 'express';
 import { ValidationError, BadRequestError } from '@project/server/app/util/apierror';
 import { validationResult, check } from 'express-validator';
 import { SCREENSHOTS_DIR, BASEIMAGE_DIR } from '@project/server/app/util/constants';
-import { CreatePagesToTrackDTO } from '@project/server/app/dto/pagestotrack.dto';
 import { CreationAttributes } from 'sequelize';
 import { PagesToTrack, ScheduledTrackingResults, UserData } from '@project/server/app/models';
 

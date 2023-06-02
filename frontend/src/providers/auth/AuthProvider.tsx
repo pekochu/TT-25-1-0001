@@ -109,40 +109,27 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     })
   }
 
-  const validateTwoFactorAuth = async (data: any) => {
+  const validateTwoFactorAuth = async (res: any) => {
     return new Promise<void>((resolve, reject) => {
       // Send data to API
-      fetch(generateApiUrl(API_AUTH), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-        .then(res => res.json() as Promise<any>)
-        .then(res => {
-          if (res.success && res.data) {
-            // save user data inside state
-            setCurrentUser(res.data.session)
+      if (res.success && res.data) {
+        // save user data inside state
+        setCurrentUser(res.data.session)
 
-            // save current user in local storage
-            localStorage.setItem(
-              'currentUser',
-              JSON.stringify(res.data.session)
-            )
+        // save current user in local storage
+        localStorage.setItem(
+          'currentUser',
+          JSON.stringify(res.data.session)
+        )
 
-            // set isAuthenticated to true
-            setIsAuthenticated(true)
+        // set isAuthenticated to true
+        setIsAuthenticated(true)
 
-            // set auth state
-            resolve()
-          } else {
-            reject(new Error(res.data.message))
-          }
-        })
-        .catch(err => {
-          reject(err)
-        })
+        // set auth state
+        resolve()
+      } else {
+        reject(new Error(res.data.message))
+      }
     })
   }
 

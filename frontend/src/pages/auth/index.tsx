@@ -4,25 +4,49 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/providers/auth/AuthProvider';
 import { useEffect } from 'react';
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
+import AutenticandoComponent from '@/pages/auth/components/Autenticando';
+import { generateApiUrl, API_AUTH } from '@/lib/constants';
 
-export const getServerSideProps = (context: GetServerSidePropsContext) => {
-  return {
-    props: { token: context.query?.token ?? undefined }, // will be passed to the page component as props
-  };
-}
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  if (!context.query.token) {
+    return {
+      props: {
+        userAuthenticated: undefined,
+      },
+    };
+  } else {
+    const token = context.query.token as string;
+    return fetch(generateApiUrl(API_AUTH), { method: 'POST', body: JSON.stringify({ token }), headers: { 'content-type': 'application/json' } })
+      .then((respose) => respose.json())
+      .then((response) => {
+        return {
+          props: {
+            userAuthenticated: response
+          }
+        }
+      })
+      .catch(() => {
+        return {
+          props: {
+            userAuthenticated: undefined,
+          },
+        };
+      });
+  }
+};
 
 
 export default function AuthPage({
-  token,
+  userAuthenticated,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const {
     validateTwoFactorAuth,
   } = useAuth();
   const router = useRouter();
 
-  if (token) {
+  if (userAuthenticated && userAuthenticated.success) {
     useEffect(() => {
-      validateTwoFactorAuth({ token })
+      validateTwoFactorAuth(userAuthenticated)
         .then(() => {
           // Redirect to home page
           router.push('/dashboard');
@@ -36,10 +60,12 @@ export default function AuthPage({
     return (
       <>
         <Head>
+          <title>Sistema Monitor Web</title>
           <meta name="description" content="NextApp" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
+        <AutenticandoComponent />
       </>
     )
   } else {

@@ -45,20 +45,141 @@ export function generateProfileConfirmationBodyHTML(token: string): string {
   `;
 }
 
-export function generateConfirmRegistrationBodyPlain(token: string): string {
+export function generateConfirmRegistrationBodyPlain(url: string): string {
   // generate email body as plain text (no html)
   return `
-  or favor, da clic en el siguiente link para confirmar tu correo electrónico y activar tu cuenta:
-    ${process.env.APP_FRONT_URL}/confirm-email/${token}
+  Confirma la creación de tu cuenta:
+    ${url}
   `;
 }
 
-export function generateConfirmRegistrationBodyHTML(token: string): string {
+export function generateConfirmRegistrationBodyHTML(params: { url: string; theme: { brandColor?: string; buttonText?: string; } }): string {
+  const { url, theme } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
   return `
-    <h1>Welcome to ${process.env.APP_NAME}</h1>
-    <p>
-      Por favor, da clic en el siguiente link para confirmar tu correo electrónico y activar tu cuenta:
-      <a href="${process.env.APP_FRONT_URL}/confirm-email/${token}">Confirmar correo electrónico</a>
-    </p>
-  `;
+<body style="background: ${color.background};">
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Confirma la creación de tu cuenta en <strong>ESCOMONITOR</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="center" style="border-radius: 5px;" bgcolor="${color.buttonBackground}"><a href="${url}"
+                target="_blank"
+                style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${color.buttonText}; text-decoration: none; border-radius: 5px; padding: 10px 20px; border: 1px solid ${color.buttonBorder}; display: inline-block; font-weight: bold;">Confirmar cuenta</a></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Si no solicitaste este correo, es completamente seguro ignorarlo.
+      </td>
+    </tr>
+  </table>
+</body>
+`;
+}
+
+export function generateConfirmLoginBodyPlain(): string {
+  // generate email body as plain text (no html)
+  return `Confirma que quieres iniciar sesión en tu cuenta`;
+}
+
+export function generateConfirmLoginBodyHTML(params: { url: string; theme: { brandColor?: string; buttonText?: string; } }): string{
+  const { url, theme } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
+  return `
+<body style="background: ${color.background};">
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Iniciar sesión en <strong>ESCOMONITOR</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="center" style="border-radius: 5px;" bgcolor="${color.buttonBackground}"><a href="${url}"
+                target="_blank"
+                style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${color.buttonText}; text-decoration: none; border-radius: 5px; padding: 10px 20px; border: 1px solid ${color.buttonBorder}; display: inline-block; font-weight: bold;">Iniciar sesión</a></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Si no solicitaste este correo, es completamente seguro ignorarlo.
+      </td>
+    </tr>
+  </table>
+</body>
+`;
+}
+
+export function generateSomeoneLoggedInBodyPlain(): string {
+  // generate email body as plain text (no html)
+  return `Alguien ha iniciado sesión en tu cuenta`;
+}
+
+export function generateSomeoneLoggedInBodyHTML(params: { url: string; theme: { brandColor?: string; buttonText?: string; } }): string{
+  const { url, theme } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
+  return `
+<body style="background: ${color.background};">
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Iniciaste sesión en <strong>ESCOMONITOR</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Si no fuiste tú, favor de reportarlo.
+      </td>
+    </tr>
+  </table>
+</body>
+`;
 }

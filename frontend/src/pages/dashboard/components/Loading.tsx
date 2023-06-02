@@ -8,9 +8,7 @@ export default function Footer() {
         <Container>
           <div className="text-center">
             <div className="m-auto">
-              <Spinner className='spinner-grow' role='status'>
-
-              </Spinner>
+              <Spinner className='spinner-grow' role='status' />
             </div>
           </div>
         </Container>

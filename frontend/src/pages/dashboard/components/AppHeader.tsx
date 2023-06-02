@@ -5,8 +5,10 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useAuth } from '@/providers/auth/AuthProvider';
 import Skeleton from 'react-loading-skeleton';
+import { useRouter } from 'next/router';
 
 export default function Header() {
+  const router = useRouter();
   const {
     currentUser,
     logOut,
@@ -48,7 +50,7 @@ export default function Header() {
                         Configuración
                       </NavDropdown.Item>
                       <NavDropdown.Divider />
-                      <NavDropdown.Item onClick={() => logOut()}>
+                      <NavDropdown.Item onClick={() => { logOut(), router.push('/') }}>
                         Cerrar sesión
                       </NavDropdown.Item>
                     </NavDropdown>

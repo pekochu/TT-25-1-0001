@@ -6,14 +6,10 @@ import fetch from 'node-fetch';
 import * as yup from 'yup';
 import * as auth from '@project/server/app/lib/auth';
 import { Response, Request, NextFunction } from 'express';
-import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
-import CaptureSnapshot from '@project/server/webdriver/CaptureSnapshot';
-import { validationResult, check } from 'express-validator';
 import logger from '@project/server/app/util/logger';
 import { InternalServerError, NotFoundError, UnauthorizedError } from '@project/server/app/util/apierror';
-import { CreationAttributes } from 'sequelize';
-import { UserData, UserMagicTokens } from '@project/server/app/models';
-import { sendEmail } from '@project/server/app/lib/mail';
+import { UserData } from '@project/server/app/models';
+import { generateConfirmLoginBodyHTML, generateConfirmLoginBodyPlain, generateSomeoneLoggedInBodyHTML, generateSomeoneLoggedInBodyPlain, sendEmail } from '@project/server/app/lib/mail';
 import { verifyToken } from '@project/server/app/lib/jwt';
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -55,8 +51,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       await sendEmail({
         to: result.email,
         subject: 'ESCOMONITOR - Iniciar sesión',
-        text: `Clic aquí para iniciar sesión...`,
-        html: `<a href="${process.env.APP_FRONT_URL}/auth?token=${twoFactorToken}">Clic para iniciar sesión</a>`,
+        text: generateConfirmLoginBodyPlain(),
+        html: generateConfirmLoginBodyHTML({ url: `${process.env.APP_FRONT_URL}/auth?token=${twoFactorToken}`, theme: {} }),
       });
     }catch(error){
       throw (new InternalServerError('No se pudo enviar el correo'));
@@ -106,8 +102,8 @@ export const authToken = async (req: Request, res: Response, next: NextFunction)
       await sendEmail({
         to: result.email,
         subject: 'Se ha registrado un acceso a tu cuenta',
-        text: `Se ha iniciado sesión en tu cuenta`,
-        html: `<p>Se ha iniciado sesión en tu cuenta</p>`,
+        text: generateSomeoneLoggedInBodyPlain(),
+        html: generateSomeoneLoggedInBodyHTML({ url: '', theme: {} }),
       });
     }catch(error){
       logger.error('No se pudo enviar el correo');
@@ -118,7 +114,7 @@ export const authToken = async (req: Request, res: Response, next: NextFunction)
       email: result.email,
       nombre: result.nombre
     };
-
+    console.log(`${result.email} ha iniciado sesión`);
     // Actualizar la tabla de usuarios con el token de refresco    
     result.twoFactorToken = null;
     result.save();

@@ -1,10 +1,10 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import AppNavbar from '@/pages/components/AppHeader';
-import Login from '@/pages/login/components/Login';
+import LoginComponent from '@/pages/login/components/Login';
 import AppFooter from '@/pages/components/AppFooter';
 
-export default function Home() {
+export default function Login() {
   return (
     <>
       <Head>
@@ -14,7 +14,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <AppNavbar />
-      <Login />
+      <LoginComponent />
       <AppFooter />
     </>
   );

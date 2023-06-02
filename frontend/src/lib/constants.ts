@@ -8,3 +8,6 @@ export const generateApiUrl = (path: string): string => {
 export const API_SCREENSHOT_URL = `/api/v1/screenshot`;
 export const API_GOTO_URL = `/api/v1/goto`;
 export const API_CREATE_USER_URL = `/api/v1/newuser`;
+export const API_LOGIN = `/api/v1/login`;
+export const API_AUTH = `/api/v1/login/auth`;
+export const API_CURRENT_USER = `/api/v1/auth/current`;

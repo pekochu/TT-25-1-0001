@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_LOGIN, API_AUTH, API_CURRENT_USER } from '@/lib/constants';
 import Cookies from 'universal-cookie';
 
 interface AuthContextData {
@@ -8,6 +8,7 @@ interface AuthContextData {
   accessToken: string | null
   refreshToken: string | null
   logIn: (_data: any) => Promise<void>
+  validateTwoFactorAuth: (_data: any) => Promise<void>
   logOut: () => void
   refreshSession: () => Promise<void>
 }
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextData>({
   accessToken: null,
   refreshToken: null,
   logIn: () => Promise.resolve(),
+  validateTwoFactorAuth: () => Promise.resolve(),
   logOut: () => { },
   refreshSession: () => Promise.resolve(),
 })
@@ -35,7 +37,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Watch currentUser
   useEffect(() => {
-    console.log('current user changed')
     if (!currentUser) {
       // try to get user from local storage
       const user = localStorage.getItem('currentUser')
@@ -48,7 +49,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Watch access token
   useEffect(() => {
-    console.log('access token changed')
     if (!accessToken) {
       // Read access token from cookies
       const cookiesArray = document.cookie.split(';');
@@ -62,7 +62,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Watch refresh token
   useEffect(() => {
-    console.log('refresh token changed')
     if (!refreshToken) {
       // try to get refresh token from local storage
       const token = localStorage.getItem('refreshToken')
@@ -76,7 +75,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   const logIn = async (data: any) => {
     return new Promise<void>((resolve, reject) => {
       // Send data to API
-      fetch(generateApiUrl('/api/v1/login'), {
+      fetch(generateApiUrl(API_LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,6 +97,34 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             // save user data inside state
             setCurrentUser(res.data.session)
 
+            // set auth state
+            resolve()
+          } else {
+            reject(new Error(res.data.message))
+          }
+        })
+        .catch(err => {
+          reject(err)
+        })
+    })
+  }
+
+  const validateTwoFactorAuth = async (data: any) => {
+    return new Promise<void>((resolve, reject) => {
+      // Send data to API
+      fetch(generateApiUrl(API_AUTH), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then(res => res.json() as Promise<any>)
+        .then(res => {
+          if (res.success && res.data) {
+            // save user data inside state
+            setCurrentUser(res.data.session)
+
             // save current user in local storage
             localStorage.setItem(
               'currentUser',
@@ -110,7 +137,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
             // set auth state
             resolve()
           } else {
-            reject(new Error(res.message))
+            reject(new Error(res.data.message))
           }
         })
         .catch(err => {
@@ -181,6 +208,7 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
         isAuthenticated,
         currentUser,
         logIn,
+        validateTwoFactorAuth,
         logOut,
         refreshSession,
         refreshToken,

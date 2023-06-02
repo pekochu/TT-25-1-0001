@@ -1,10 +1,29 @@
 import Head from 'next/head';
-import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import AppNavbar from '@/pages/components/AppHeader';
 import Inicio from '@/pages/components/Inicio';
 import AppFooter from '@/pages/components/AppFooter';
+import { useAuth } from '@/providers/auth/AuthProvider';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
-export default function Home() {
+export default function HomePage() {
+  const {
+    currentUser,
+    logOut,
+    refreshSession,
+    isAuthenticated,
+    accessToken,
+    refreshToken,
+  } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated]);
+
   return (
     <>
       <Head>

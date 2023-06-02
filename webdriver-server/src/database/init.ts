@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UserData, PagesToTrack, UserMagicTokens, ScheduledTrackingResults } from '@project/server/app/models';
 //
-const dbInit = (): Promise<[any, any, any, any]> => Promise.all([
+const dbInit = (): Promise<[any, any, any]> => Promise.all([
   UserData.sync({ alter: true }),
   PagesToTrack.sync({ alter: true }),
-  UserMagicTokens.sync({ alter: true }),
+  // UserMagicTokens.sync({ alter: true }),
   ScheduledTrackingResults.sync({ alter: true })
 ]);
 // Tokens para usuarios
-UserData.hasMany(UserMagicTokens, { sourceKey: 'id', foreignKey: 'userId', onDelete: 'SET NULL' });
-UserMagicTokens.belongsTo(UserData, { foreignKey: 'userId' });
+// UserData.hasMany(UserMagicTokens, { sourceKey: 'id', foreignKey: 'userId', onDelete: 'SET NULL' });
+// UserMagicTokens.belongsTo(UserData, { foreignKey: 'userId' });
 // Paginas para usuarios
 UserData.hasMany(PagesToTrack, { sourceKey: 'id', foreignKey: 'userId', onDelete: 'SET NULL' });
 PagesToTrack.belongsTo(UserData, { foreignKey: 'userId' });

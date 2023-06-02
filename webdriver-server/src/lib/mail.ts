@@ -49,7 +49,7 @@ export function generateConfirmRegistrationBodyPlain(token: string): string {
   // generate email body as plain text (no html)
   return `
   or favor, da clic en el siguiente link para confirmar tu correo electrónico y activar tu cuenta:
-    ${process.env.APP_URL}/confirm-email/${token}
+    ${process.env.APP_FRONT_URL}/confirm-email/${token}
   `;
 }
 
@@ -58,7 +58,7 @@ export function generateConfirmRegistrationBodyHTML(token: string): string {
     <h1>Welcome to ${process.env.APP_NAME}</h1>
     <p>
       Por favor, da clic en el siguiente link para confirmar tu correo electrónico y activar tu cuenta:
-      <a href="${process.env.APP_URL}/confirm-email/${token}">Confirmar correo electrónico</a>
+      <a href="${process.env.APP_FRONT_URL}/confirm-email/${token}">Confirmar correo electrónico</a>
     </p>
   `;
 }

@@ -4,6 +4,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useAuth } from '@/providers/auth/AuthProvider';
+import Skeleton from 'react-loading-skeleton';
 
 export default function Header() {
   const {
@@ -40,7 +41,21 @@ export default function Header() {
                 */}
               </Nav>
               <Nav>
-                <Nav.Link href="/login">Iniciar sesión</Nav.Link>
+                {isAuthenticated ?
+                  <>
+                    <NavDropdown title={currentUser.nombre} id="basic-nav-dropdown">
+                      <NavDropdown.Item href="/configuracion">
+                        Configuración
+                      </NavDropdown.Item>
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item onClick={() => logOut()}>
+                        Cerrar sesión
+                      </NavDropdown.Item>
+                    </NavDropdown>
+                  </> : <>
+                    <Skeleton />
+                  </>
+                }
               </Nav>
             </Navbar.Collapse>
           </Container>

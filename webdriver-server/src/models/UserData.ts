@@ -8,6 +8,7 @@ class UserData extends Model<InferAttributes<UserData>, InferCreationAttributes<
     declare telefono: CreationOptional<string>;
     declare activo: CreationOptional<boolean>;
     declare refreshToken: CreationOptional<string>;
+    declare twoFactorToken: CreationOptional<string | null>;
     
     // marcas de tiempo
     declare createdAt: CreationOptional<Date>;
@@ -37,6 +38,9 @@ UserData.init({
     defaultValue: false
   },
   refreshToken: {
+    type: DataTypes.STRING,
+  },
+  twoFactorToken: {
     type: DataTypes.STRING,
   },
   createdAt: DataTypes.DATE,

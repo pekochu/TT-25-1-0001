@@ -51,7 +51,9 @@ const errorHandler = (error: ApiError, req: Request, res: Response, next: NextFu
 app.disable('x-powered-by');
 
 // Sesión y autenticación
-app.get('/api/v1/login', loginController.login);
+app.post('/api/v1/login', loginController.login);
+app.post('/api/v1/login/auth', loginController.authToken);
+app.post('/api/v1/auth/current', loginController.currentUser);
 // Webdriver
 app.get('/api/v1', apiController.getApi);
 app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);

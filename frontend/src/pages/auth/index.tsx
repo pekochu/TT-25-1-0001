@@ -5,6 +5,7 @@ import { useAuth } from '@/providers/auth/AuthProvider';
 import { useEffect } from 'react';
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
 import AutenticandoComponent from '@/pages/auth/components/Autenticando';
+import LoginErrorComponent from '@/pages/auth/components/LoginError';
 import { generateApiUrl, API_AUTH } from '@/lib/constants';
 
 export const getServerSideProps = async (context: GetServerSidePropsContext) => {
@@ -60,7 +61,7 @@ export default function AuthPage({
     return (
       <>
         <Head>
-          <title>Sistema Monitor Web</title>
+          <title>Autenticando...</title>
           <meta name="description" content="NextApp" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" href="/favicon.ico" />
@@ -69,17 +70,15 @@ export default function AuthPage({
       </>
     )
   } else {
-    useEffect(() => {
-      router.push('/login?error=No token');
-    }, []);
-
     return (
       <>
         <Head>
+          <title>Ha ocurrido un error iniciado sesión</title>
           <meta name="description" content="NextApp" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
+        <LoginErrorComponent />
       </>
     )
   }

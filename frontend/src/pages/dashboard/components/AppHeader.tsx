@@ -21,9 +21,9 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   return (
     <>
-      <header>
-        <Navbar bg="light" expand="lg">
-          <Container>
+      <header className=''>
+        <Navbar bg="light" expand="lg" >
+          <Container fluid className="mx-4">
             <Navbar.Brand href="/dashboard">Sistema Monitor Web</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">

@@ -28,10 +28,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     }
 
     let msg = `Mandamos un link a su correo electrónico (${result.email}) para que pueda iniciar sesión en el sistema`;
-    let tipo = `login`;
     if(!result.activo) {
       msg = `Es necesario activar su cuenta. Revise su bandeja de entrada (${result.email}) para que pueda iniciar sesión en el sistema y activaremos su cuenta en el proceso.`;
-      tipo = `activate`;
     }
 
     // Crear resultados
@@ -55,7 +53,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         html: generateConfirmLoginBodyHTML({ url: `${process.env.APP_FRONT_URL}/auth?token=${twoFactorToken}`, theme: {} }),
       });
     }catch(error){
-      throw (new InternalServerError('No se pudo enviar el correo'));
+      throw (new InternalServerError('No se pudo enviar el correo:\n' + error));
     }
     // Actualizar la tabla de usuarios con el token de refresco    
     result.refreshToken = refreshToken;
@@ -94,7 +92,7 @@ export const authToken = async (req: Request, res: Response, next: NextFunction)
     }
 
     if (result.twoFactorToken != twoFactorToken) {
-      throw (new UnauthorizedError('Token no válido'));
+      throw (new UnauthorizedError('El token no coincide'));
     }
 
     // Enviar correo
@@ -122,6 +120,52 @@ export const authToken = async (req: Request, res: Response, next: NextFunction)
     res.status(200).send({ success: true, data: { session } });
   } catch(error){
     next(error);
+  }
+    
+};
+
+export const refreshAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      token: yup.string().required('El refreshToken es requerido')
+    });
+    // Validar datos del formulario
+    await schema.validate(req.body, { abortEarly: true });
+    // Obtener y guardar el token
+    const refreshToken = req.body.token as string;
+    const decoded = await verifyToken(
+      refreshToken,
+      process.env.JWT_REFRESH_TOKEN_SECRET as string
+    );
+
+    if(!decoded){
+      throw (new UnauthorizedError('Token no válido'));
+    }
+    // Obtener datos del usuario
+    const result = await UserData.findOne({ where: { id: decoded.id } });
+  
+    if(!result) {
+      throw (new NotFoundError('Usuario no encontrado'));
+    }
+
+    if(result.refreshToken != refreshToken) {
+      throw (new NotFoundError('El token no coincide'));
+    }
+
+    // Crear resultados
+    const session = {
+      id: result.id,
+      email: result.email,
+      nombre: result.nombre
+    };
+
+    // generate access + refresh token + email token for 2 factor authentication
+    const accessToken = auth.generateAccessToken(session);
+
+    // Enviar datos
+    res.status(200).send({ success: true, data: { session, accessToken } });
+  } catch(error){
+    next(new UnauthorizedError('Error al procesar datos'));
   }
     
 };

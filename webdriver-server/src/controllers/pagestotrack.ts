@@ -67,7 +67,9 @@ export const getPagesToTrack = async (req: Request, res: Response, next: NextFun
     if(!result) {
       throw (new BadRequestError('Error al obtener trabajos'));
     } else {
-      res.status(201).send(result);
+      res.status(200).send({ data: [
+        { descripcion: 'Aqui mama el Peko', id: 1, url: 'google.com' }, { descripcion: 'Aqui mama el German', id: 2, url: 'youtube.com' }, { descripcion: 'Aqui mama el Ivan', id: 1, url: 'porn.com' }
+      ] });
     }
   } catch(error){
     next(error);

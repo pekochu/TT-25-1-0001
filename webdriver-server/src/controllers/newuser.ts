@@ -15,19 +15,43 @@ import { PagesToTrack, ScheduledTrackingResults, UserData } from '@project/serve
 export const createNewUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
     const schema = yup.object().shape({
-      url: yup.string().url().required('Por favor, introduce una URL'),
-      nombre: yup.string().url().required('Por favor, introduce un nombre'),
+      url: yup.string().required('Por favor, introduce una URL'),
+      nombre: yup.string().required('Por favor, introduce un nombre'),
       email: yup.string().email().required('Por favor, introduce una cadena de texto con formato de correo electronico'),
       telefono: yup.string().min(10).max(10).required('Por favor, introduce una número de teléfono en el area de la Republica Mexicana'),
       frecuencia: yup.number().required('Por favor, introduce la frecuencia'),
-      descripcion: yup.string().required('Por favor, introduce una breve descripcion'),
       diferenciaAlerta: yup.number().required('Requerimos de un porcentaje de diferencia para enviar alertas'),
+      modo: yup.string().required('Se requiere el modo para monitoreo'),
+      corte_x: yup.number(),
+      corte_y: yup.number(),
+      corte_ancho: yup.number(),
+      corte_alto: yup.number(),
+      preacciones: yup.object(),
+      texto_analisis: yup.string(),
+      texto_clave: yup.string(),
     });
 
     await schema.validate(req.body, { abortEarly: true });
+    // Validamos que ya hay navegador
+    if(!req.session.browserId){
+      throw (new BadRequestError('No hay navegador asignado al usuario'));
+    }
+    // Validamos que ya se ha creado la captura
+    if(!fs.existsSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`))){
+      throw (new BadRequestError('No se ha creado la captura de pantalla'));
+    }
     // Creamos el usuario
     const userPayload: CreationAttributes<UserData> = req.body;
+    const emailExists = await UserData.findOne({ where: {
+      email: userPayload.email
+    } });
+    if(emailExists){
+      throw (new BadRequestError('El email ya existe en los registros'));
+    }
     const userResult = await UserData.create(userPayload);
+    // Crear pagina a monitorear
+    const pagesPayload: CreationAttributes<PagesToTrack> = req.body;
+    pagesPayload.userId = userResult.id;
     // Sumar segundos a la fecha
     const currentDate = new Date();
     req.body.siguienteComprobacion = currentDate;
@@ -36,27 +60,25 @@ export const createNewUser = async (req: Request, res: Response, next: NextFunct
     fs.renameSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), newFileLocation);
     // Guardar la ubicacion de la imagen
     req.body.imageBasePath = newFileLocation;
-    req.body.userId = 1;
     // Validar la peticion
-    const payload: CreationAttributes<PagesToTrack> = req.body;
-    const result = await PagesToTrack.create(payload);
-    
-
+    const result = await PagesToTrack.create(pagesPayload);
+  
     if(!result) {
       throw (new BadRequestError('Error al crear trabajo'));
     } else {
       // Crear resultados
       const jobs : CreationAttributes<ScheduledTrackingResults>[] = [];
       for(let i = 0; i < 12; i++){
-        currentDate.setSeconds(currentDate.getSeconds() + (parseInt(req.body.frecuencia) * (i + 1)));
+        const nuevaFecha = new Date(currentDate);
+        nuevaFecha.setSeconds(currentDate.getSeconds() + (parseInt(req.body.frecuencia) * (i + 1)));
         jobs.push({
-          tiempoChequeo: currentDate,
-          userId: 1,
+          tiempoChequeo: nuevaFecha,
+          userId: userResult.id,
           pagesToTrackId: result.id
         });
       }
-      ScheduledTrackingResults.bulkCreate(jobs);
-      res.status(201).send(result);
+      const sesiones = await ScheduledTrackingResults.bulkCreate(jobs);
+      res.status(201).send({ success: true, statusCode: 201, data: { usuario: userResult, paginas: result, sesiones: sesiones } });
     }
   } catch(error){
     next(error);

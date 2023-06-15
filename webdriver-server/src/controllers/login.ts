@@ -117,7 +117,7 @@ export const authToken = async (req: Request, res: Response, next: NextFunction)
     result.twoFactorToken = null;
     result.save();
     // Enviar datos
-    res.status(200).send({ success: true, data: { session } });
+    res.status(200).send({ success: true, statusCode: 200, data: { session } });
   } catch(error){
     next(error);
   }
@@ -159,7 +159,7 @@ export const refreshAuth = async (req: Request, res: Response, next: NextFunctio
       nombre: result.nombre
     };
 
-    // generate access + refresh token + email token for 2 factor authentication
+    // generate access
     const accessToken = auth.generateAccessToken(session);
 
     // Enviar datos

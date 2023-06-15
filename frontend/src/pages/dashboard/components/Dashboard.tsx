@@ -27,6 +27,7 @@ import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
 import fetcher from '@/util/fetcher';
 import Paginas from './Paginas';
 import SubmitNewPaginaModal from './SubmitNewPagina';
+import EditarSitioModal from './EditarSitio';
 
 export default function DashboardComponent() {
 
@@ -41,6 +42,7 @@ export default function DashboardComponent() {
 
   const [validated, setValidated] = useState(false);
   const [newPaginaModal, showNewPaginaModal] = useState(false);
+  const [editarSitioModal, showEditarSitioModal] = useState(false);
   const [userDataLoading, setUserDataLoading] = useState(false);
   const [screenshotLoading, setScreenshotLoading] = useState(false);
   const [verticalOverflow, setVerticalOverflow] = useState(false);
@@ -100,7 +102,7 @@ export default function DashboardComponent() {
                     <Stack direction="horizontal" gap={3}>
                       <span className="me-auto">{paginaSeleccionada.descripcion}</span>
                       <div className="vr" />
-                      <Button variant="primary" className=""><FiSettings /> Configuración</Button>{' '}
+                      <Button variant="primary" className="" onClick={() => showEditarSitioModal(true)}><FiSettings /> Configuración</Button>{' '}
                     </Stack>
 
                   </Card.Header>
@@ -148,6 +150,7 @@ export default function DashboardComponent() {
         </Container>
       </main >
       <SubmitNewPaginaModal show={newPaginaModal} setShow={showNewPaginaModal} />
+      <EditarSitioModal show={editarSitioModal} setShow={showEditarSitioModal} />
     </SWRConfig>
   );
 }

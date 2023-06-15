@@ -11,10 +11,12 @@ import WebdriverInstances, { WebDriverObject } from '@project/server/webdriver/i
 import { CronJob } from 'cron';
 import { getByTiempoChequeo, update } from '@project/server/app/database/services/ScheduledTrackingResultsService';
 import { v4 as uuidv4 } from 'uuid';
+import { generateDifferenceDetectedBodyText, generateDifferenceDetectedBodyHTML, sendEmailWithAttachments } from '@project/server/app/lib/mail';
 import { SCREENSHOTS_DIR, CHECKIMAGE_DIR, DIFFIMAGE_DIR } from '@project/server/app/util/constants';
 import pixelmatch from 'pixelmatch';
 import { InferCreationAttributes } from 'sequelize';
 import { ScheduledTrackingResults } from '../models';
+import RealizarDiferenciaImagen from './RealizarDiferenciaImagen';
 
 // Funcion para cerrar los navegadores
 // que ya no fueron usados despues de 
@@ -63,7 +65,8 @@ export async function ejecutarDiferenciaDeImagenes(): Promise<void> {
               expires: Date.now()
             };
             WebdriverInstances.set(uuid, browserObject);
-            await browser.url(element.pagesToTrack?.url as string);   
+            const url = element.pagesToTrack?.url as string;
+            await browser.url(url);   
             await browser.waitUntil(
               () => browser.execute(() => document.readyState === 'complete'),
               {
@@ -74,26 +77,57 @@ export async function ejecutarDiferenciaDeImagenes(): Promise<void> {
             const captureSnapshot = new CaptureSnapshot(browser);
             const img = await captureSnapshot.getDevtoolsImage();    
             browser.deleteSession();
-            const baseimg = PNG.sync.read(fs.readFileSync(element.pagesToTrack?.imageBasePath as string));
-            const { width, height } = baseimg;
+            const imageBasePath = element.pagesToTrack?.imageBasePath as string;
+            const baseimg = PNG.sync.read(fs.readFileSync(imageBasePath));
             const testPath = path.join(CHECKIMAGE_DIR, `${browser.sessionId}-test.png`);
-            const testimg = PNG.sync.read(await sharp(img).extract({ left: 0, top: 0, width: width, height: height }).png().toBuffer());
-            fs.writeFileSync(testPath, testimg.data, {});
-            const diff = new PNG({ width, height });
-            const numDiffPixels = pixelmatch(baseimg.data, testimg.data, diff.data, width, height, { threshold: element.pagesToTrack?.diferenciaAlerta as number });
+            // const testimg = PNG.sync.read(await sharp(img).extract({ left: 0, top: 0, width: width, height: height }).png().toBuffer());
+            const testimg = PNG.sync.read(img);
+            fs.writeFileSync(testPath, PNG.sync.write(testimg), {});
+            const realizarDiferencia = new RealizarDiferenciaImagen(baseimg, testimg);
+            const imagenFinal = await realizarDiferencia.ejecutar();
+            const diferenciaResultante = await realizarDiferencia.getPorcentajeDiferencia();
             const diffPath = path.join(DIFFIMAGE_DIR, `${browser.sessionId}-diff.png`);
-            fs.writeFileSync(diffPath, PNG.sync.write(diff), {});
+            fs.writeFileSync(diffPath, PNG.sync.write(imagenFinal), {});
             // Sumar de nuevo los segundos
-            const currentDate = new Date();
-            currentDate.setSeconds(currentDate.getSeconds() + parseInt(element.pagesToTrack?.frecuencia as string));
             const payload: Partial<InferCreationAttributes<ScheduledTrackingResults>> = {
               imageChequeoPath: testPath,
-              imageDiferenciaPath: diffPath
+              imageDiferenciaPath: diffPath,
+              diferencia: diferenciaResultante
             };
             await update(element.id, payload);
             await WebdriverInstances.delete(uuid);
+            const tiempoLocal = element.tiempoChequeo.toLocaleString('es-ES', { timeZone: 'America/Mexico_City' });
+            const descripcion = element.pagesToTrack?.descripcion as string;
+            const email = element.userData?.email as string;
+            try{
+              logger.info(`Enviando correo a ${email} jeje`);
+              await sendEmailWithAttachments({
+                to: element.userData?.email as string,
+                subject: `Se detectó un cambio en ${url} a las ${tiempoLocal}`,
+                text: generateDifferenceDetectedBodyText(descripcion),
+                html: generateDifferenceDetectedBodyHTML({ url: url, pagina: descripcion, diferencia: `${diferenciaResultante}`, theme: {} }),
+                attachments: [
+                  {
+                    filename: 'Base.png',
+                    path: imageBasePath
+                  },
+                  {
+                    filename: 'Actual.png',
+                    path: testPath
+                  },
+                  {
+                    filename: 'Salida.png',
+                    path: diffPath
+                  }
+                  
+                ]
+              });
+            }catch(error){
+              logger.error('No se pudo enviar el correo', error);
+            }
+            
           }catch(browserError) {
-            logger.info(`Falló la comprobacion de diferencia`);
+            logger.info(`Falló la comprobacion de diferencia`, browserError);
             const browserObject = WebdriverInstances.get(uuid);
             if(browserObject){
               await browserObject.browser.deleteSession();

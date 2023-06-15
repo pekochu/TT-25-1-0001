@@ -27,7 +27,6 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
     await schema.validate(req.body, { abortEarly: true });
     // Sumar segundos a la fecha
     const currentDate = new Date();
-    req.body.siguienteComprobacion = currentDate;
     // Mover imagen de screenshots a la carpeta de imagenes base
     const newFileLocation = path.join(BASEIMAGE_DIR, `${req.session.browserId}-base.png`);
     fs.renameSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), newFileLocation);
@@ -45,7 +44,8 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
       // Crear resultados
       const jobs : CreationAttributes<ScheduledTrackingResults>[] = [];
       for(let i = 0; i < 12; i++){
-        currentDate.setSeconds(currentDate.getSeconds() + (parseInt(req.body.frecuencia) * (i + 1)));
+        logger.info((parseInt(result.frecuencia) * (i + 1)));
+        currentDate.setSeconds(currentDate.getSeconds() + (parseInt(result.frecuencia) * (i + 1)));
         jobs.push({
           tiempoChequeo: currentDate,
           userId: 1,
@@ -63,13 +63,13 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
 
 export const getPagesToTrack = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
-    const result = await getAll({});
+    const result = await PagesToTrack.findAll({ where: {
+      userId: 1
+    } });
     if(!result) {
       throw (new BadRequestError('Error al obtener trabajos'));
     } else {
-      res.status(200).send({ data: [
-        { descripcion: 'Aqui mama el Peko', id: 1, url: 'google.com' }, { descripcion: 'Aqui mama el German', id: 2, url: 'youtube.com' }, { descripcion: 'Aqui mama el Ivan', id: 1, url: 'porn.com' }
-      ] });
+      res.status(200).send({ success: true, statusCode: 200, data: result });
     }
   } catch(error){
     next(error);

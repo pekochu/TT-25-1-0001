@@ -13,7 +13,7 @@ import { ApiError } from '@project/server/app/util/apierror';
 // Controladores (manejo de rutas)
 import * as loginController from '@project/server/app/controllers/login';
 import * as apiController from '@project/server/app/controllers/api';
-import * as userdataController from '@project/server/app/controllers/userdata';
+import * as newuserController from '@project/server/app/controllers/newuser';
 import * as pagestotrackController from '@project/server/app/controllers/pagestotrack';
 
 // Conexion a base de datos
@@ -44,7 +44,7 @@ app.use(
 // Manejador de error
 const errorHandler = (error: ApiError, req: Request, res: Response, next: NextFunction): void => {
   const status = error.statusCode || 400;
-  res.status(status).send({ error: true, data: { ...error, ...{ message: error.message } } });
+  res.status(status).send({ statusCode: status, success: false, data: { ...error, ...{ message: error.message } } });
 };
 
 // Deshabilitar header 'x-powered-by'
@@ -65,7 +65,7 @@ app.post('/api/v1/move', createWebDriverInstancePerSession, apiController.pointA
 app.post('/api/v1/xpath', createWebDriverInstancePerSession, apiController.getElementsByNameOrXpath);
 app.get('/api/v1/inputElements', createWebDriverInstancePerSession, apiController.getAllVisibleInputs);
 // Crear usuario
-app.post('/api/v1/user', userdataController.createUserData);
+app.post('/api/v1/user', newuserController.createNewUser);
 // Crear trabajo
 app.post('/api/v1/test', pagestotrackController.createPagesToTrack);
 app.get('/api/v1/test', pagestotrackController.getPagesToTrack);

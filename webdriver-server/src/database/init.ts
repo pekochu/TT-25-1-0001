@@ -11,12 +11,12 @@ const dbInit = (): Promise<[any, any, any]> => Promise.all([
 // UserData.hasMany(UserMagicTokens, { sourceKey: 'id', foreignKey: 'userId', onDelete: 'SET NULL' });
 // UserMagicTokens.belongsTo(UserData, { foreignKey: 'userId' });
 // Paginas para usuarios
-UserData.hasMany(PagesToTrack, { sourceKey: 'id', foreignKey: 'userId', onDelete: 'SET NULL' });
-PagesToTrack.belongsTo(UserData, { foreignKey: 'userId' });
+UserData.hasMany(PagesToTrack, { foreignKey: 'userId', onDelete: 'SET NULL'  });
+PagesToTrack.belongsTo(UserData, { foreignKey: 'userId', as: 'userData' });
 // Resultados para paginas
-PagesToTrack.hasMany(ScheduledTrackingResults, { sourceKey: 'id', foreignKey: 'pagesToTrackId', onDelete: 'SET NULL' });
-ScheduledTrackingResults.belongsTo(PagesToTrack, { foreignKey: 'pagesToTrackId' });
+PagesToTrack.hasMany(ScheduledTrackingResults, { foreignKey: 'pagesToTrackId', onDelete: 'SET NULL' });
+ScheduledTrackingResults.belongsTo(PagesToTrack, { foreignKey: 'pagesToTrackId', as: 'pagesToTrack' });
 // Resultados para usuarios
-UserData.hasMany(ScheduledTrackingResults, { sourceKey: 'id', foreignKey: 'userId', onDelete: 'SET NULL' });
-ScheduledTrackingResults.belongsTo(UserData, { foreignKey: 'userId' });
+UserData.hasMany(ScheduledTrackingResults, { foreignKey: 'userId', onDelete: 'SET NULL' });
+ScheduledTrackingResults.belongsTo(UserData, { foreignKey: 'userId', as:'userData' });
 export default dbInit; 

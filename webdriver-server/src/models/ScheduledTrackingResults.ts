@@ -11,7 +11,7 @@ class ScheduledTrackingResults extends Model<InferAttributes<ScheduledTrackingRe
     declare imageDiferenciaPath: CreationOptional<string>
     declare tiempoChequeo: Date
     declare userId: ForeignKey<UserData['id']>;
-    declare user?: NonAttribute<UserData>;
+    declare userData?: NonAttribute<UserData>;
     declare pagesToTrackId: ForeignKey<PagesToTrack['id']>;
     declare pagesToTrack?: NonAttribute<PagesToTrack>;
     // marcas de tiempo

@@ -20,7 +20,7 @@ closeExpiredBrowsers();
 /**
  * Realizar la diferencia y comprobacion
  */
-// ejecutarDiferenciaDeImagenes();
+ejecutarDiferenciaDeImagenes();
 
 /**
  * Inicia el servidor Express

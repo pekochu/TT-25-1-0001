@@ -54,8 +54,10 @@ export const getByTiempoChequeo = async (): Promise<ScheduledTrackingResults[]> 
     },
     include: [{
       model: PagesToTrack,
+      as: 'pagesToTrack'
     }, {
       model: UserData,
+      as: 'userData'
     }]
   });
 

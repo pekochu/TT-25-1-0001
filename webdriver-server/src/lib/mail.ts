@@ -1,5 +1,5 @@
 import * as nodemailer from 'nodemailer';
-import { Options } from './types/mail';
+import { Options, OptionsAttachment } from './types/mail';
 
 export async function sendEmail({ to, subject, text, html }: Options): Promise<any> {
   // create reusable transporter
@@ -20,6 +20,31 @@ export async function sendEmail({ to, subject, text, html }: Options): Promise<a
     subject, // Subject line
     text, // plain text body
     html, // html body
+  });
+
+  return info;
+}
+
+export async function sendEmailWithAttachments({ to, subject, text, html, attachments }: OptionsAttachment): Promise<any> {
+  // create reusable transporter
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+
+  // send mail with defined transport object
+  const info = await transporter.sendMail({
+    from: `\"${process.env.SMTP_FROM_NAME}\" <${process.env.SMTP_FROM_ADDRESS}>`,
+    to: Array.isArray(to) ? to : [to], // list of receivers
+    subject, // Subject line
+    text, // plain text body
+    html, // html body
+    attachments
   });
 
   return info;
@@ -177,6 +202,56 @@ export function generateSomeoneLoggedInBodyHTML(params: { url: string; theme: { 
       <td align="center"
         style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
         Si no fuiste tú, favor de reportarlo.
+      </td>
+    </tr>
+  </table>
+</body>
+`;
+}
+
+export function generateDifferenceDetectedBodyText(pagina: string): string {
+  // generate email body as plain text (no html)
+  return `¡Se han detectado cambios en la página: ${pagina}`;
+}
+
+export function generateDifferenceDetectedBodyHTML(params: { url: string; pagina: string; diferencia:string; theme: { brandColor?: string; buttonText?: string; } }): string{
+  const { url, theme, pagina, diferencia } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
+  return `
+<body style="background: ${color.background};">
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Se han detectado cambios en la página <strong>${url}</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Revisa los archivos adjuntos para checar la imagen base, la imagen actual y la imagen con las diferencias resaltadas.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Descripción de la página: ${pagina ? pagina : ''}
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Diferencia: ${diferencia}%
       </td>
     </tr>
   </table>

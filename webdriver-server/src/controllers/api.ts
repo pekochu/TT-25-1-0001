@@ -26,7 +26,7 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
 
     if (!errors.isEmpty()) {
       req.flash('errors', errors.array());
-      res.status(401).send({ statusCode: 401, errors: errors.array() });
+      res.status(400).send({ statusCode: 400, errors: errors.array() });
       return;
     }
     const webDriverInstance = WebdriverInstances.get(req.session.id);
@@ -44,7 +44,7 @@ export const goToUrl = async (req: Request, res: Response, next: NextFunction): 
         timeoutMsg: 'Error al cargar sitio web'
       }
     );
-    res.json('OK');
+    res.status(200).send({ statusCode: 200, success: true, data: { message: `Se navegó a ${url} de forma satisfactoria` } });
   } catch(error){
     next(error);
   }
@@ -76,9 +76,9 @@ export const getElementScreenshot = async (req: Request, res: Response, next: Ne
   try{
     const elementsSchema = yup.object().shape({
       elementAncestor: yup.number().default(0),
-      elementId: yup.string().required('Se requiere el elementId'),
+      elementId: yup.string(),
       selector: yup.string().required(),
-      alias: yup.string().required()
+      alias: yup.string()
     });
 
     await elementsSchema.validate(req.body, { abortEarly: true });

@@ -9,6 +9,20 @@ const redirectToLogin = {
   },
 }
 
+const redirectToRefresh = {
+  redirect: {
+    destination: '/refreshing',
+    permanent: false,
+  },
+}
+
+const redirectToHome = {
+  redirect: {
+    destination: '/',
+    permanent: false,
+  },
+}
+
 // Create a getServerSideProps utility function called "withAuth" to check user
 const withAuth = async <T extends Object = any>(
   { req }: GetServerSidePropsContext,
@@ -27,13 +41,14 @@ const withAuth = async <T extends Object = any>(
           return onSuccess();
         }
         
-        return redirectToLogin;
+        
+        return redirectToRefresh;
       })
       .catch(() => {
-        return redirectToLogin;
+        return redirectToRefresh;
       });
   } else {
-    return redirectToLogin;
+    return redirectToHome;
   }
 }
 

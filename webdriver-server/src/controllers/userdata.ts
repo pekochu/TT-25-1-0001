@@ -7,7 +7,8 @@ import * as yup from 'yup';
 import logger from '@project/server/app/util/logger';
 import { Response, Request, NextFunction } from 'express';
 import { ValidationError, BadRequestError } from '@project/server/app/util/apierror';
-import { create } from '@project/server/app/database/services/UserDataService';
+import * as UserDataService from '@project/server/app/database/services/UserDataService';
+
 import { UserData } from '@project/server/app/models';
 import { CreationAttributes } from 'sequelize';
 
@@ -26,11 +27,45 @@ export const createUserData = async (req: Request, res: Response, next: NextFunc
 
     const payload:CreationAttributes<UserData> = req.body;
 
-    const result = await create(payload);
+    const result = await UserDataService.create(payload);
     if(!result) {
       throw (new BadRequestError('Este usuario ya existe'));
     } else {
       res.status(201).send(result);
+    }
+  } catch(error){
+    next(error);
+  }
+  
+};
+
+export const getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const result = await UserDataService.getAll({includeDeleted: true});
+    if(!result) {
+      throw (new BadRequestError('Error al obtener usuarios'));
+    } else {
+      res.status(200).send({ success: true, statusCode: 200, data: result });
+    }
+  } catch(error){
+    next(error);
+  }
+  
+};
+
+export const getPagesByUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      userId: yup.number().required('userId requerido')
+    });
+    await schema.validate(req.params, { abortEarly: true });
+    const params = req.params;
+
+    const result = await UserDataService.getByIdWithPages(parseInt(params.userId));
+    if(!result) {
+      throw (new BadRequestError('Error al obtener usuarios'));
+    } else {
+      res.status(200).send({ success: true, statusCode: 200, data: result });
     }
   } catch(error){
     next(error);

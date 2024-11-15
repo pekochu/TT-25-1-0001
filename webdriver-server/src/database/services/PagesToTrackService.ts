@@ -15,6 +15,10 @@ export const getById = (id: number): Promise<PagesToTrack> => {
   return pagestotrackDal.getById(id);
 };
 
+export const getByIdWithResults = (id: number): Promise<PagesToTrack> => {
+  return pagestotrackDal.getByIdWithResults(id);
+};
+
 export const deleteById = (id: number): Promise<boolean> => {
   return pagestotrackDal.deleteById(id);
 };

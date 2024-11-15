@@ -15,36 +15,56 @@ import Modal from 'react-bootstrap/Modal';
 import Skeleton from 'react-loading-skeleton'
 import React, { useEffect, useId, useState } from 'react';
 import ReactCrop from 'react-image-crop'
+import { useAuth } from '@/providers/auth/AuthProvider';
 import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { response } from 'express';
 
 export default function InicioComponent() {
-
+  const {
+    logIn,
+  } = useAuth();
   const urlId = useId();
   const imgId = useId();
   const nombreId = useId();
-  const apellidoId = useId();
   const emailId = useId();
+  const telefonoId = useId();
   const frecuenciaId = useId();
   const descripcionId = useId();
   const diferenciaId = useId();
 
   const [validated, setValidated] = useState(false);
   const [modalActive, setModalActive] = useState(false);
+  const [modalSuccessActive, setModalSuccessActive] = useState(false);
   const [userDataLoading, setUserDataLoading] = useState(false);
   const [screenshotLoading, setScreenshotLoading] = useState(false);
   const [verticalOverflow, setVerticalOverflow] = useState(false);
   const [img, setImg] = useState('/imagen foto navegador.png');
 
+  const [url, setUrl] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [frecuencia, setFrecuencia] = useState('60');
+  const [descripcion, setDescripcion] = useState('');
+  const [diferencia, setDiferencia] = useState('1');
+
   const getSnapshot = async () => {
     const res = await fetch(generateApiUrl(API_SCREENSHOT_URL), { credentials: 'include', });
     const imageBlob = await res.blob();
     const imageObjectURL = URL.createObjectURL(imageBlob);
+    if (descripcion == "") {
+      await fetch('http://localhost:3000/api/v1/title', { credentials: 'include', method: 'GET', headers: { 'content-type': 'application/json' } })
+        .then((response) => response.json())
+        .then((response) => {
+          setDescripcion(response.title)
+        })
+    }
     setImg(imageObjectURL);
     setScreenshotLoading(false);
     setVerticalOverflow(true);
   };
 
-  const requestSnapshot = async (event: any) => {
+  const firstInteraction = async (event: any) => {
     event.preventDefault();
     // Obtenemos el formulario
     const form = event.target;
@@ -59,19 +79,54 @@ export default function InicioComponent() {
     event.preventDefault();
     // Obtenemos el formulario
     const form = event.target;
-    const body = {
-      nombre: `${form.nombre.value.replace(/\s/g, '')} ${form.apellido.value.replace(/\s/g, '')}`,
-      email: `${form.email.value}`,
-      telefono: ''
+    let diferenciaAlerta = 0;
+    switch (diferencia) {
+      case '0':
+        diferenciaAlerta = 0;
+        break;
+      case '1':
+        diferenciaAlerta = 1;
+        break;
+      case '2':
+        diferenciaAlerta = 10;
+        break;
+      case '3':
+        diferenciaAlerta = 25;
+        break;
+      case '4':
+        diferenciaAlerta = 50;
+        break;
+      case '5':
+        diferenciaAlerta = 80;
+        break;
     }
+    const body = {
+      "url": url,
+      "email": email,
+      "descripcion": descripcion,
+      "nombre": nombre,
+      "telefono": telefono,
+      "frecuencia": frecuencia,
+      "diferenciaAlerta": diferenciaAlerta,
+      "modo": "VISUAL"
+    }
+    console.log(body)
     setUserDataLoading(true);
     // Registramos usuario
     await fetch('http://localhost:3000/api/v1/user', { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
       .then((respose) => respose.json())
       .then((respose) => {
-        console.log(respose.data)
-        setUserDataLoading(false)
-        setModalActive(true)
+        if (!!respose.success) {
+          console.log(respose.data)
+          setUserDataLoading(false)
+          setModalActive(false)
+          logIn({ email })
+          setModalSuccessActive(true)
+        } else {
+          console.log("No fue posible registrar usuario");
+          setUserDataLoading(false);
+        }
+
       })
       .catch(() => {
         console.log("No fue posible registrar usuario");
@@ -82,6 +137,10 @@ export default function InicioComponent() {
 
   const handleClose = () => setModalActive(false);
   const handleShow = () => setModalActive(true);
+
+  const handleSuccessClose = () => setModalSuccessActive(false);
+  const handleSuccessShow = () => setModalSuccessActive(true);
+
 
   return (
     <>
@@ -105,14 +164,14 @@ export default function InicioComponent() {
             <Card.Body>
               <div className="py-1 my-1 text-center">
                 <div className="col-lg-9 mx-auto">
-                  <Form noValidate onSubmit={requestSnapshot}>
+                  <Form noValidate onSubmit={firstInteraction}>
                     <Form.Group className="mb-3" controlId={urlId}>
                       <Form.Label>Introduce una URL</Form.Label>
                       <InputGroup className="mb-3">
                         <InputGroup.Text>
                           ejemplo.com
                         </InputGroup.Text>
-                        <Form.Control aria-describedby={urlId} name="url" />
+                        <Form.Control aria-describedby={urlId} name="url" value={url} onChange={(e) => setUrl(e.target.value)} />
                         <Button variant="primary" type='submit' disabled={screenshotLoading}>
                           {screenshotLoading ? <span><Spinner
                             as="span"
@@ -140,13 +199,13 @@ export default function InicioComponent() {
                 </Card.Body>
               </Card>
               <div className="py-3 my-3">
-                <Form noValidate onSubmit={saveJob}>
+                <Form onSubmit={(e) => { e.preventDefault(), setModalActive(true) }}>
                   <div className="col-lg-9 mx-auto row">
                     <div className="col-lg-8">
                       <Form.Group className="mb-3" controlId={emailId}>
                         <Form.Label>¿A dónde enviaremos las alertas?</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Control aria-describedby={emailId} name="email" placeholder='ejemplo@gmail.com' />
+                          <Form.Control aria-describedby={emailId} name="email" placeholder='ejemplo@gmail.com' required value={email} onChange={(e) => setEmail(e.target.value)} />
                         </InputGroup>
                       </Form.Group>
                     </div>
@@ -154,7 +213,9 @@ export default function InicioComponent() {
                       <Form.Group className="mb-3" controlId={frecuenciaId}>
                         <Form.Label>Frecuencia</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Select aria-label="Selector para frecuencias de monitoreo" aria-describedby={frecuenciaId} defaultValue={60} name="frecuencia">
+                          <Form.Select aria-label="Selector para frecuencias de monitoreo" aria-describedby={frecuenciaId} defaultValue={frecuencia} name="frecuencia" required onChange={(e) => {
+                            setFrecuencia(e.target.value)
+                          }}>
                             <option disabled={true}>Frecuencia de monitoreo</option>
                             <option value="5">5 segundos</option>
                             <option value="10">10 segundos</option>
@@ -172,7 +233,7 @@ export default function InicioComponent() {
                       <Form.Group className="mb-3" controlId={descripcionId}>
                         <Form.Label>Breve descripción</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Control aria-describedby={descripcionId} name="descripcion" placeholder='...' />
+                          <Form.Control aria-describedby={descripcionId} name="descripcion" placeholder='...' required value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
                         </InputGroup>
                       </Form.Group>
                     </div>
@@ -180,7 +241,9 @@ export default function InicioComponent() {
                       <Form.Group className="mb-3" controlId={diferenciaId}>
                         <Form.Label>Porcentaje de cambio</Form.Label>
                         <InputGroup className="mb-3">
-                          <Form.Select aria-label="Selector para porcentaje de cambio" aria-describedby={diferenciaId} defaultValue={1} name="diferenciaAlerta">
+                          <Form.Select aria-label="Selector para porcentaje de cambio" aria-describedby={diferenciaId} defaultValue={diferencia} name="diferenciaAlerta" onChange={(e) => {
+                            setDiferencia(e.target.value)
+                          }}>
                             <option disabled={true}>Porcentaje de diferencia para aviso</option>
                             <option value="0">Cualquier cambio</option>
                             <option value="1">Pequeño (1%)</option>
@@ -232,24 +295,40 @@ export default function InicioComponent() {
           <div className="col-lg-9 mx-auto row">
             <div className="col-lg-6">
               <Form.Group className="mb-3" controlId={nombreId}>
-                <Form.Label>Tu nombre</Form.Label>
+                <Form.Label>Tu nombre y apellido</Form.Label>
                 <InputGroup className="mb-3">
-                  <Form.Control aria-describedby={nombreId} name="nombre" placeholder='Juan' disabled={true} />
+                  <Form.Control aria-describedby={nombreId} name="nombre" placeholder='Juan Perez' value={nombre} onChange={(e) => setNombre(e.target.value)} />
                 </InputGroup>
               </Form.Group>
             </div>
             <div className="col-lg-6">
-              <Form.Group className="mb-3" controlId={apellidoId}>
-                <Form.Label>Tu apellido</Form.Label>
+              <Form.Group className="mb-3" controlId={telefonoId}>
+                <Form.Label>Tu número de teléfono</Form.Label>
                 <InputGroup className="mb-3">
-                  <Form.Control aria-describedby={apellidoId} name="apellido" placeholder='Perez' disabled={true} />
+                  <Form.Control aria-describedby={telefonoId} name="telefono" placeholder='5512345678' value={telefono} onChange={(e) => setTelefono(e.target.value)} />
                 </InputGroup>
               </Form.Group>
             </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
+          <Button variant="primary" onClick={saveJob}>
+            Guardar
+          </Button>
           <Button variant="secondary" onClick={handleClose}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={modalSuccessActive} onHide={handleSuccessClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Casi listo</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Ahora recibirás un correo electrónico para activar tu cuenta
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleSuccessClose}>
             Cerrar
           </Button>
         </Modal.Footer>

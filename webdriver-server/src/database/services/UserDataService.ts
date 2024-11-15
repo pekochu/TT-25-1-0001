@@ -22,6 +22,10 @@ export const getById = (id: number): Promise<UserData> => {
   return userdataDal.getById(id);
 };
 
+export const getByIdWithPages = (id: number): Promise<UserData> => {
+  return userdataDal.getByIdWithPages(id);
+};
+
 export const deleteById = (id: number): Promise<boolean> => {
   return userdataDal.deleteById(id);
 };

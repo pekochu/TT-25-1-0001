@@ -6,6 +6,7 @@ import cors from 'cors';
 import flash from 'express-flash';
 import path from 'path';
 import createWebDriverInstancePerSession from '@project/server/webdriver/webdriver-middleware';
+import authMiddleware from '@project/server/webdriver/auth-middleware';
 import httpStatus from 'http-status';
 import dbInit from '@project/server/app/database/init';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
@@ -13,8 +14,10 @@ import { ApiError } from '@project/server/app/util/apierror';
 // Controladores (manejo de rutas)
 import * as loginController from '@project/server/app/controllers/login';
 import * as apiController from '@project/server/app/controllers/api';
+import * as usersController from '@project/server/app/controllers/userdata';
 import * as newuserController from '@project/server/app/controllers/newuser';
 import * as pagestotrackController from '@project/server/app/controllers/pagestotrack';
+import * as scheduledtrackresults from '@project/server/app/controllers/scheduledtrackresults';
 
 // Conexion a base de datos
 dbInit().finally();
@@ -66,9 +69,19 @@ app.post('/api/v1/xpath', createWebDriverInstancePerSession, apiController.getEl
 app.get('/api/v1/inputElements', createWebDriverInstancePerSession, apiController.getAllVisibleInputs);
 // Crear usuario
 app.post('/api/v1/user', newuserController.createNewUser);
-// Crear trabajo
-app.post('/api/v1/test', pagestotrackController.createPagesToTrack);
-app.get('/api/v1/test', pagestotrackController.getPagesToTrack);
-
+app.get('/api/v1/users', usersController.getUsers);
+app.get('/api/v1/users/:userId/pages', usersController.getPagesByUser);
+// Páginas
+app.post('/api/v1/pages', pagestotrackController.createPagesToTrack);
+app.get('/api/v1/pages', authMiddleware, pagestotrackController.getPagesToTrack);
+app.patch('/api/v1/pages/:pageId/pause', authMiddleware, pagestotrackController.pausePage);
+app.delete('/api/v1/pages/:pageId', authMiddleware, pagestotrackController.deletePage);
+app.get('/api/v1/pages/:pageId/results', authMiddleware, pagestotrackController.getSinglePage);
+app.get('/api/v1/pages/:pageId/getBaseImage', authMiddleware, pagestotrackController.getPageBaseImage);
+// Resultados
+app.get('/api/v1/results/:resultId/getBaseImage', authMiddleware, scheduledtrackresults.getBaseImage);
+app.get('/api/v1/results/:resultId/getNewImage', authMiddleware, scheduledtrackresults.getNewImage);
+app.get('/api/v1/results/:resultId/getDifferenceImage', authMiddleware, scheduledtrackresults.getDifferenceImage);
+// Error handler
 app.use(errorHandler);
 export default app;

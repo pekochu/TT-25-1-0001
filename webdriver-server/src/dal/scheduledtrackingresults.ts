@@ -44,6 +44,22 @@ export const getById = async (id: number): Promise<ScheduledTrackingResults> => 
   return scheduled;
 };
 
+export const getScreenshotsById = async (id: number): Promise<ScheduledTrackingResults> => {
+  const scheduled = await ScheduledTrackingResults.findByPk(id, {
+    include: [{
+      model: PagesToTrack,
+      as: 'resultsPage'
+    }]
+  });
+
+  if (!scheduled) {
+    // @todo throw custom error
+    throw new Error('not found');
+  }
+
+  return scheduled;
+};
+
 export const getByTiempoChequeo = async (): Promise<ScheduledTrackingResults[]> => {
   const current = new Date();
   const scheduled = await ScheduledTrackingResults.findAll({
@@ -54,10 +70,10 @@ export const getByTiempoChequeo = async (): Promise<ScheduledTrackingResults[]> 
     },
     include: [{
       model: PagesToTrack,
-      as: 'pagesToTrack'
+      as: 'resultsPage'
     }, {
       model: UserData,
-      as: 'userData'
+      as: 'userResults'
     }]
   });
 

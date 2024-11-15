@@ -7,6 +7,7 @@ class UserData extends Model<InferAttributes<UserData>, InferCreationAttributes<
     declare email: string;
     declare telefono: CreationOptional<string>;
     declare activo: CreationOptional<boolean>;
+    declare rol: number;
     declare refreshToken: CreationOptional<string>;
     declare twoFactorToken: CreationOptional<string | null>;
     
@@ -37,6 +38,10 @@ UserData.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  rol: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1
+  },
   refreshToken: {
     type: DataTypes.STRING,
   },
@@ -47,6 +52,11 @@ UserData.init({
   updatedAt: DataTypes.DATE,
   deletedAt: DataTypes.DATE,
 }, {
+  scopes: {
+    withoutSensitiveData: {
+      attributes: { exclude: ['refreshToken', 'twoFactorToken'] },
+    }
+  },
   sequelize: sequelizeConnection,
   paranoid: true
 });

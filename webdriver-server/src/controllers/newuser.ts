@@ -17,6 +17,7 @@ export const createNewUser = async (req: Request, res: Response, next: NextFunct
     const schema = yup.object().shape({
       url: yup.string().required('Por favor, introduce una URL'),
       nombre: yup.string().required('Por favor, introduce un nombre'),
+      descripcion: yup.string().required('Por favor, introduce una descripición para la página'),
       email: yup.string().email().required('Por favor, introduce una cadena de texto con formato de correo electronico'),
       telefono: yup.string().min(10).max(10).required('Por favor, introduce una número de teléfono en el area de la Republica Mexicana'),
       frecuencia: yup.number().required('Por favor, introduce la frecuencia'),

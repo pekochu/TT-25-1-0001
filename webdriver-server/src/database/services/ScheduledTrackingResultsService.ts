@@ -15,6 +15,10 @@ export const getById = (id: number): Promise<ScheduledTrackingResults> => {
   return scheduledTrackingDal.getById(id);
 };
 
+export const getScreenshotsById = (id: number): Promise<ScheduledTrackingResults> => {
+  return scheduledTrackingDal.getScreenshotsById(id);
+};
+
 export const getByTiempoChequeo = (): Promise<ScheduledTrackingResults[]> => {
   return scheduledTrackingDal.getByTiempoChequeo();
 };

@@ -36,7 +36,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     const session = {
       id: result.id,
       email: result.email,
-      nombre: result.nombre
+      nombre: result.nombre,
+      rol: result.rol
     };
 
     // generate access + refresh token + email token for 2 factor authentication
@@ -53,7 +54,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         html: generateConfirmLoginBodyHTML({ url: `${process.env.APP_FRONT_URL}/auth?token=${twoFactorToken}`, theme: {} }),
       });
     }catch(error){
-      throw (new InternalServerError('No se pudo enviar el correo:\n' + error));
+      // throw (new InternalServerError('No se pudo enviar el correo:\n' + error));
     }
     // Actualizar la tabla de usuarios con el token de refresco    
     result.refreshToken = refreshToken;
@@ -110,7 +111,8 @@ export const authToken = async (req: Request, res: Response, next: NextFunction)
     const session = {
       id: result.id,
       email: result.email,
-      nombre: result.nombre
+      nombre: result.nombre,
+      rol: result.rol
     };
     console.log(`${result.email} ha iniciado sesión`);
     // Actualizar la tabla de usuarios con el token de refresco    
@@ -156,7 +158,8 @@ export const refreshAuth = async (req: Request, res: Response, next: NextFunctio
     const session = {
       id: result.id,
       email: result.email,
-      nombre: result.nombre
+      nombre: result.nombre,
+      rol: result.rol
     };
 
     // generate access

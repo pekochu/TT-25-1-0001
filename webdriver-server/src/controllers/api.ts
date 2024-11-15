@@ -57,6 +57,7 @@ export const getScreenshot = async (req: Request, res: Response, next: NextFunct
       throw new InternalServerError('El navegador no fue inicializado');
     }   
     const browser = webDriverInstance.browser as WebdriverIO.Browser;
+    await browser.pause(5000);
     const captureSnapshot = new CaptureSnapshot(browser);
     const img = await captureSnapshot.getDevtoolsImage();    
     fs.writeFileSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), img, {});
@@ -68,6 +69,7 @@ export const getScreenshot = async (req: Request, res: Response, next: NextFunct
     res.end(img);
      
   } catch(error){
+    logger.error(`[Screenshot] Error: ${(error as any).getMessage()}`)
     next(error);
   }
 };

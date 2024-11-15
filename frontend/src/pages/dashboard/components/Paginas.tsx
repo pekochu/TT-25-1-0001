@@ -22,6 +22,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import React, { memo, useMemo, useEffect, useId, useState } from 'react';
 import ReactCrop from 'react-image-crop';
 import { KeyedMutator } from 'swr'
+import Cookies from 'universal-cookie';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiStopCircle, FiTrash } from 'react-icons/fi';
 import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
 import fetcher from '@/util/fetcher';
@@ -32,7 +33,7 @@ interface IPaginasListaProps {
   isLoading: boolean
   error: Error
   mutate: KeyedMutator<any>
-  onSelect: (_id: number) => void
+  onSelect: (_pagina: any) => void
   onError?: () => string
 }
 
@@ -100,34 +101,38 @@ export default function ListaPaginas({
   onSelect,
   onError
 }: IPaginasListaProps) {
-  const onPause = (post: any) => {
-    fetch(`/api/posts/${post.id}/clear`, {
+  const onPause = (page: any) => {
+    fetch(generateApiUrl(`/api/v1/pages/${page.uuid}/pause`), {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'authorization': `Bearer ${new Cookies().get('token')}`
       },
     }).then(res => {
       if (res.ok) {
         // mutate posts
         mutate()
       } else {
-        console.log('Failed to clear votes, are you admin?')
+        console.log('Fallo al poner monitoreo de página en pausa')
       }
     })
   }
 
-  const onClear = (post: any) => {
-    fetch(`/api/posts/${post.id}/clear`, {
+  const onClear = (page: any) => {
+    fetch(generateApiUrl(`/api/v1/pages/${page.uuid}`), {
       method: 'DELETE',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'authorization': `Bearer ${new Cookies().get('token')}`
       },
     }).then(res => {
       if (res.ok) {
         // mutate posts
         mutate()
       } else {
-        console.log('Failed to clear votes, are you admin?')
+        console.log('Fallo al eliminar página para monitoreo')
       }
     })
   }
@@ -162,7 +167,7 @@ export default function ListaPaginas({
   if (error) {
     return (
       <Alert variant="danger">
-        <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
+        <Alert.Heading>¡Un error!</Alert.Heading>
         <p>
           Ha ocurrido un error tratando de obtener tus páginas a monitorear.
         </p>
@@ -186,9 +191,9 @@ export default function ListaPaginas({
         </ListGroup>
       ) : (
         <Alert variant="warning">
-          <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
+          <Alert.Heading>¡No haz registrado páginas!</Alert.Heading>
           <p>
-            No tienes paginas registradas para monitorear
+            No tienes paginas para monitorear
           </p>
         </Alert>
       )}

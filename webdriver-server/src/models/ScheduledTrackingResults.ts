@@ -18,6 +18,7 @@ class ScheduledTrackingResults extends Model<InferAttributes<ScheduledTrackingRe
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
     declare deletedAt: CreationOptional<Date>;
+
 }
 
 ScheduledTrackingResults.init({
@@ -63,6 +64,11 @@ ScheduledTrackingResults.init({
   updatedAt: DataTypes.DATE,
   deletedAt: DataTypes.DATE,
 }, {
+  scopes: {
+    withoutPaths: {
+      attributes: { exclude: ['imageChequeoPath', 'imageDiferenciaPath'] },
+    }
+  },
   sequelize: sequelizeConnection,
   paranoid: true
 });

@@ -17,7 +17,7 @@ import Skeleton from 'react-loading-skeleton'
 import React, { useEffect, useId, useState } from 'react';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiStopCircle, FiTrash } from 'react-icons/fi';
 import ReactCrop from 'react-image-crop'
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_SCREENSHOT_URL, API_V1_PAGES } from '@/lib/constants';
 
 
 interface ISubmitNewPaginaProps {
@@ -38,10 +38,22 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
   const [verticalOverflow, setVerticalOverflow] = useState(false);
   const [img, setImg] = useState('/imagen foto navegador.png');
 
+  const [url, setUrl] = useState('');
+  const [frecuencia, setFrecuencia] = useState('60');
+  const [descripcion, setDescripcion] = useState('');
+  const [diferencia, setDiferencia] = useState('1');
+
   const getSnapshot = async () => {
     const res = await fetch(generateApiUrl(API_SCREENSHOT_URL), { credentials: 'include', });
     const imageBlob = await res.blob();
     const imageObjectURL = URL.createObjectURL(imageBlob);
+    if (descripcion == "") {
+      await fetch('http://localhost:3000/api/v1/title', { credentials: 'include', method: 'GET', headers: { 'content-type': 'application/json' } })
+        .then((response) => response.json())
+        .then((response) => {
+          setDescripcion(response.title)
+        })
+    }
     setImg(imageObjectURL);
     setScreenshotLoading(false);
     setVerticalOverflow(true);
@@ -62,21 +74,45 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
     event.preventDefault();
     // Obtenemos el formulario
     const form = event.target;
-    const body = {
-      nombre: `${form.nombre.value.replace(/\s/g, '')} ${form.apellido.value.replace(/\s/g, '')}`,
-      email: `${form.email.value}`,
-      telefono: ''
+    let diferenciaAlerta = 0;
+    switch (diferencia) {
+      case '0':
+        diferenciaAlerta = 0;
+        break;
+      case '1':
+        diferenciaAlerta = 1;
+        break;
+      case '2':
+        diferenciaAlerta = 10;
+        break;
+      case '3':
+        diferenciaAlerta = 25;
+        break;
+      case '4':
+        diferenciaAlerta = 50;
+        break;
+      case '4':
+        diferenciaAlerta = 75;
+        break;
     }
+    const body = {
+      "url": url,
+      "descripcion": descripcion,
+      "frecuencia": frecuencia,
+      "diferenciaAlerta": diferenciaAlerta,
+      "modo": "VISUAL"
+    }
+    console.log(body);
     setUserDataLoading(true);
     // Registramos usuario
-    await fetch('http://localhost:3000/api/v1/user', { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
+    await fetch(generateApiUrl(API_V1_PAGES), { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
       .then((respose) => respose.json())
       .then((respose) => {
         console.log(respose.data)
         setUserDataLoading(false)
       })
       .catch(() => {
-        console.log("No fue posible registrar usuario");
+        console.log("No fue posible registrar una nueva página");
         setUserDataLoading(false);
       });
 
@@ -99,7 +135,7 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
                         <InputGroup.Text>
                           ejemplo.com
                         </InputGroup.Text>
-                        <Form.Control aria-describedby={urlId} name="url" />
+                        <Form.Control aria-describedby={urlId} name="url" value={url} onChange={(e) => setUrl(e.target.value)} />
                         <Button variant="primary" type='submit' disabled={screenshotLoading}>
                           {screenshotLoading ? <span><Spinner
                             as="span"
@@ -137,7 +173,7 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
                           <Form.Group className="mb-3" controlId={descripcionId}>
                             <Form.Label>Breve descripción</Form.Label>
                             <InputGroup className="mb-3">
-                              <Form.Control aria-describedby={descripcionId} name="descripcion" placeholder='...' />
+                              <Form.Control aria-describedby={descripcionId} name="descripcion" placeholder='...' defaultValue={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
                             </InputGroup>
                           </Form.Group>
                           <Row>
@@ -145,7 +181,9 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
                               <Form.Group className="mb-3" controlId={frecuenciaId}>
                                 <Form.Label>Frecuencia</Form.Label>
                                 <InputGroup className="mb-3">
-                                  <Form.Select aria-label="Selector para frecuencias de monitoreo" aria-describedby={frecuenciaId} defaultValue={60} name="frecuencia">
+                                  <Form.Select aria-label="Selector para frecuencias de monitoreo" aria-describedby={frecuenciaId} defaultValue={frecuencia} name="frecuencia" required onChange={(e) => {
+                                    setFrecuencia(e.target.value)
+                                  }}>
                                     <option disabled={true}>Frecuencia de monitoreo</option>
                                     <option value="5">5 segundos</option>
                                     <option value="10">10 segundos</option>
@@ -249,7 +287,7 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
         <Modal.Footer>
           <Stack direction="horizontal" gap={3} style={{ width: '100%' }}>
             <Button className="me-auto" variant="secondary" onClick={() => setShow(false)}>Cancelar</Button>{' '}
-            <Button variant="primary" type='submit' disabled={userDataLoading}>
+            <Button variant="primary" type='submit' disabled={userDataLoading} onClick={saveJob}>
               {userDataLoading ? <Spinner
                 as="span"
                 animation="border"
@@ -257,7 +295,7 @@ export default function SubmitNewPaginaModal({ show, setShow }: ISubmitNewPagina
                 role="status"
                 aria-hidden="true"
               /> : null}
-              Empezar a monitorear
+              Registrar
             </Button>{' '}
           </Stack>
 

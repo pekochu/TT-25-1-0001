@@ -8,10 +8,10 @@ import { generateApiUrl, API_LOGIN_REFRESH } from '@/lib/constants';
  * @returns The response from the fetch
  */
 const fetcher = <T>(url: string, isRetrying = false): Promise<T> =>
-  fetch(url)
+  fetch(url, { credentials: 'include', method: 'GET', headers: { 'content-type': 'application/json', 'authorization': `Bearer ${new Cookies().get('token')}` } })
     .then(async res => {
       // Check if response is ok
-      if (res.status == 401) {
+      if (res.status == 401 || res.status == 403) {
         // If not, check if we are already retrying
         if (isRetrying) {
           throw new Error('Unable to refresh token');

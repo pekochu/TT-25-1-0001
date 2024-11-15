@@ -9,12 +9,7 @@ import { useEffect } from 'react';
 
 export default function HomePage() {
   const {
-    currentUser,
-    logOut,
-    refreshSession,
     isAuthenticated,
-    accessToken,
-    refreshToken,
   } = useAuth();
   const router = useRouter();
 
@@ -27,7 +22,7 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>Sistema Monitor Web</title>
+        <title>ESCOMONITOR | Registro</title>
         <meta name="description" content="NextApp" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />

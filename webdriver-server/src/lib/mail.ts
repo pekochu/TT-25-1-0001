@@ -1,6 +1,8 @@
 import * as nodemailer from 'nodemailer';
 import { Options, OptionsAttachment } from './types/mail';
 
+const randomString = () => Math.random().toString(36).substring(2, 12);
+
 export async function sendEmail({ to, subject, text, html }: Options): Promise<any> {
   // create reusable transporter
   const transporter = nodemailer.createTransport({
@@ -81,6 +83,7 @@ export function generateConfirmRegistrationBodyPlain(url: string): string {
 export function generateConfirmRegistrationBodyHTML(params: { url: string; theme: { brandColor?: string; buttonText?: string; } }): string {
   const { url, theme } = params;
   const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
   const color = {
     background: '#f9f9f9',
     text: '#444',
@@ -92,6 +95,7 @@ export function generateConfirmRegistrationBodyHTML(params: { url: string; theme
 
   return `
 <body style="background: ${color.background};">
+  <span style="opacity: 0">${randomStr}</span>
   <table width="100%" border="0" cellspacing="20" cellpadding="0"
     style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
     <tr>
@@ -118,6 +122,7 @@ export function generateConfirmRegistrationBodyHTML(params: { url: string; theme
       </td>
     </tr>
   </table>
+  <span style="opacity: 0">${randomStr}</span>
 </body>
 `;
 }
@@ -130,6 +135,7 @@ export function generateConfirmLoginBodyPlain(): string {
 export function generateConfirmLoginBodyHTML(params: { url: string; theme: { brandColor?: string; buttonText?: string; } }): string{
   const { url, theme } = params;
   const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
   const color = {
     background: '#f9f9f9',
     text: '#444',
@@ -141,6 +147,7 @@ export function generateConfirmLoginBodyHTML(params: { url: string; theme: { bra
 
   return `
 <body style="background: ${color.background};">
+  <span style="opacity: 0">${randomStr}</span>
   <table width="100%" border="0" cellspacing="20" cellpadding="0"
     style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
     <tr>
@@ -167,6 +174,7 @@ export function generateConfirmLoginBodyHTML(params: { url: string; theme: { bra
       </td>
     </tr>
   </table>
+  <span style="opacity: 0">${randomStr}</span>
 </body>
 `;
 }
@@ -179,6 +187,7 @@ export function generateSomeoneLoggedInBodyPlain(): string {
 export function generateSomeoneLoggedInBodyHTML(params: { url: string; theme: { brandColor?: string; buttonText?: string; } }): string{
   const { url, theme } = params;
   const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
   const color = {
     background: '#f9f9f9',
     text: '#444',
@@ -190,6 +199,7 @@ export function generateSomeoneLoggedInBodyHTML(params: { url: string; theme: { 
 
   return `
 <body style="background: ${color.background};">
+  <span style="opacity: 0">${randomStr}</span>
   <table width="100%" border="0" cellspacing="20" cellpadding="0"
     style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
     <tr>
@@ -205,6 +215,7 @@ export function generateSomeoneLoggedInBodyHTML(params: { url: string; theme: { 
       </td>
     </tr>
   </table>
+  <span style="opacity: 0">${randomStr}</span>
 </body>
 `;
 }
@@ -217,6 +228,7 @@ export function generateDifferenceDetectedBodyText(pagina: string): string {
 export function generateDifferenceDetectedBodyHTML(params: { url: string; pagina: string; diferencia:string; theme: { brandColor?: string; buttonText?: string; } }): string{
   const { url, theme, pagina, diferencia } = params;
   const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
   const color = {
     background: '#f9f9f9',
     text: '#444',
@@ -228,6 +240,7 @@ export function generateDifferenceDetectedBodyHTML(params: { url: string; pagina
 
   return `
 <body style="background: ${color.background};">
+  <span style="opacity: 0">${randomStr}</span>
   <table width="100%" border="0" cellspacing="20" cellpadding="0"
     style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
     <tr>
@@ -255,6 +268,7 @@ export function generateDifferenceDetectedBodyHTML(params: { url: string; pagina
       </td>
     </tr>
   </table>
+  <span style="opacity: 0">${randomStr}</span>
 </body>
 `;
 }

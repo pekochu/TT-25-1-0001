@@ -24,7 +24,7 @@ export default function Header() {
       <header className=''>
         <Navbar bg="light" expand="lg" >
           <Container fluid className="mx-4">
-            <Navbar.Brand href="/dashboard">Sistema Monitor Web</Navbar.Brand>
+            <Navbar.Brand href="/dashboard">ESCOMONITOR</Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">

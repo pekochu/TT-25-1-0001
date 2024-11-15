@@ -74,6 +74,7 @@ export async function ejecutarDiferenciaDeImagenes(): Promise<void> {
                 timeoutMsg: 'Error al cargar sitio web'
               }
             );
+            await browser.pause(5000);
             const captureSnapshot = new CaptureSnapshot(browser);
             const img = await captureSnapshot.getDevtoolsImage();    
             browser.deleteSession();
@@ -100,28 +101,32 @@ export async function ejecutarDiferenciaDeImagenes(): Promise<void> {
             const descripcion = element.pagesToTrack?.descripcion as string;
             const email = element.userData?.email as string;
             try{
-              logger.info(`Enviando correo a ${email} jeje`);
-              await sendEmailWithAttachments({
-                to: element.userData?.email as string,
-                subject: `Se detectó un cambio en ${url} a las ${tiempoLocal}`,
-                text: generateDifferenceDetectedBodyText(descripcion),
-                html: generateDifferenceDetectedBodyHTML({ url: url, pagina: descripcion, diferencia: `${diferenciaResultante}`, theme: {} }),
-                attachments: [
-                  {
-                    filename: 'Base.png',
-                    path: imageBasePath
-                  },
-                  {
-                    filename: 'Actual.png',
-                    path: testPath
-                  },
-                  {
-                    filename: 'Salida.png',
-                    path: diffPath
-                  }
-                  
-                ]
-              });
+              logger.info(`Enviando correo a ${email}`);
+              if(diferenciaResultante > (element.pagesToTrack?.diferenciaAlerta as number)){
+                // Enviar correo cuando el porcentaje de diferencia sobrepase la dado por el usuario
+                await sendEmailWithAttachments({
+                  to: element.userData?.email as string,
+                  subject: `Se detectó un cambio en ${url} a las ${tiempoLocal}`,
+                  text: generateDifferenceDetectedBodyText(descripcion),
+                  html: generateDifferenceDetectedBodyHTML({ url: url, pagina: descripcion, diferencia: `${diferenciaResultante}`, theme: {} }),
+                  attachments: [
+                    {
+                      filename: 'Base.png',
+                      path: imageBasePath
+                    },
+                    {
+                      filename: 'Actual.png',
+                      path: testPath
+                    },
+                    {
+                      filename: 'Salida.png',
+                      path: diffPath
+                    }
+                    
+                  ]
+                });
+              }
+              
             }catch(error){
               logger.error('No se pudo enviar el correo', error);
             }

@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { isEmpty } from 'lodash';
 
-import { UserData } from '@project/server/app/models';
+import { UserData, PagesToTrack } from '@project/server/app/models';
 import { GetAllUserData } from '@project/server/app/dal/types';
 import { CreationAttributes } from 'sequelize';
 
@@ -45,6 +45,26 @@ export const getById = async (id: number): Promise<UserData> => {
   return ingredient;
 };
 
+export const getByIdWithPages = async (id: number): Promise<UserData> => {
+  const pageToTrack = await UserData.findByPk(id, {
+    include: [{
+      model: PagesToTrack,
+      as: 'managingPages'
+    }],
+    order: [
+      // We start the order array with the model we want to sort
+      [{ model: PagesToTrack, as: 'managingPages' }, 'id', 'ASC']
+    ]
+  });
+
+  if (!pageToTrack) {
+    // @todo throw custom error
+    throw new Error('not found');
+  }
+
+  return pageToTrack;
+};
+
 export const deleteById = async (id: number): Promise<boolean> => {
   const deletedUserDataCount = await UserData.destroy({
     where: { id }
@@ -54,7 +74,7 @@ export const deleteById = async (id: number): Promise<boolean> => {
 };
 
 export const getAll = async (filters?: GetAllUserData): Promise<UserData[]> => {
-  return UserData.findAll({
+  return UserData.scope('withoutSensitiveData').findAll({
     where: {
       ...(filters?.isDeleted && { deletedAt: { [Op.not]: undefined } })
     },

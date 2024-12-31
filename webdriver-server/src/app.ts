@@ -6,7 +6,7 @@ import cors from 'cors';
 import flash from 'express-flash';
 import path from 'path';
 import createWebDriverInstancePerSession from '@project/server/webdriver/webdriver-middleware';
-import authMiddleware from '@project/server/webdriver/auth-middleware';
+import authMiddleware, { authAdminMiddleware } from '@project/server/webdriver/auth-middleware';
 import httpStatus from 'http-status';
 import dbInit from '@project/server/app/database/init';
 import { SESSION_SECRET } from '@project/server/app/util/secrets';
@@ -52,27 +52,35 @@ const errorHandler = (error: ApiError, req: Request, res: Response, next: NextFu
 
 // Deshabilitar header 'x-powered-by'
 app.disable('x-powered-by');
-
+// Tests
+app.get('/api/v1', apiController.getApi);
+// Solo admin endpoints
+app.get('/api/v1/users', authAdminMiddleware, usersController.getUsers);
+app.get('/api/v1/users/:userId/pages', authAdminMiddleware, usersController.getPagesByUser);
+app.post('/api/v1/users/:userId/deactivate', authAdminMiddleware, usersController.getPagesByUser);
+app.post('/api/v1/users/:userId/activate', authAdminMiddleware, usersController.getPagesByUser);
+app.post('/api/v1/users/:userId/mail', authAdminMiddleware, usersController.getPagesByUser);
+app.delete('/api/v1/users/:userId', authAdminMiddleware, usersController.getPagesByUser);
 // Sesión y autenticación
 app.post('/api/v1/login', loginController.login);
 app.post('/api/v1/login/auth', loginController.authToken);
 app.post('/api/v1/login/refresh', loginController.refreshAuth);
 app.post('/api/v1/auth/current', loginController.currentUser);
 // Webdriver
-app.get('/api/v1', apiController.getApi);
-app.get('/api/v1/goto', createWebDriverInstancePerSession, apiController.goToUrl);
-app.get('/api/v1/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
-app.post('/api/v1/element/screenshot', createWebDriverInstancePerSession, apiController.getElementScreenshot);
-app.get('/api/v1/title', createWebDriverInstancePerSession, apiController.getTitlePage);
-app.post('/api/v1/move', createWebDriverInstancePerSession, apiController.pointAtElement);
-app.post('/api/v1/xpath', createWebDriverInstancePerSession, apiController.getElementsByNameOrXpath);
-app.get('/api/v1/inputElements', createWebDriverInstancePerSession, apiController.getAllVisibleInputs);
+app.get('/api/v1/web/goto', createWebDriverInstancePerSession, apiController.goToUrl);
+app.get('/api/v1/web/screenshot', createWebDriverInstancePerSession, apiController.getScreenshot);
+app.post('/api/v1/web/element/screenshot', createWebDriverInstancePerSession, apiController.getElementScreenshot);
+app.get('/api/v1/web/title', createWebDriverInstancePerSession, apiController.getTitlePage);
+app.post('/api/v1/web/move', createWebDriverInstancePerSession, apiController.pointAtElement);
+app.post('/api/v1/web/xpath', createWebDriverInstancePerSession, apiController.getElementsByNameOrXpath);
+app.get('/api/v1/web/inputElements', createWebDriverInstancePerSession, apiController.getAllVisibleInputs);
+app.post('/api/v1/web/actions', createWebDriverInstancePerSession, apiController.performActions);
 // Crear usuario
-app.post('/api/v1/user', newuserController.createNewUser);
-app.get('/api/v1/users', usersController.getUsers);
-app.get('/api/v1/users/:userId/pages', usersController.getPagesByUser);
+app.post('/api/v1/user', createWebDriverInstancePerSession, newuserController.createNewUser);
+app.patch('/api/v1/user', createWebDriverInstancePerSession, usersController.updateUserData);
 // Páginas
 app.post('/api/v1/pages', pagestotrackController.createPagesToTrack);
+app.patch('/api/v1/pages', pagestotrackController.updatePagesToTrack);
 app.get('/api/v1/pages', authMiddleware, pagestotrackController.getPagesToTrack);
 app.patch('/api/v1/pages/:pageId/pause', authMiddleware, pagestotrackController.pausePage);
 app.delete('/api/v1/pages/:pageId', authMiddleware, pagestotrackController.deletePage);
@@ -82,6 +90,8 @@ app.get('/api/v1/pages/:pageId/getBaseImage', authMiddleware, pagestotrackContro
 app.get('/api/v1/results/:resultId/getBaseImage', authMiddleware, scheduledtrackresults.getBaseImage);
 app.get('/api/v1/results/:resultId/getNewImage', authMiddleware, scheduledtrackresults.getNewImage);
 app.get('/api/v1/results/:resultId/getDifferenceImage', authMiddleware, scheduledtrackresults.getDifferenceImage);
+// WhatsApp Image
+app.get('/api/v1/whatsapp/:resultId/getDifferenceImage', scheduledtrackresults.getDifferenceImageForMI);
 // Error handler
 app.use(errorHandler);
 export default app;

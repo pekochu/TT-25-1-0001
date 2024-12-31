@@ -20,6 +20,9 @@ class PagesToTrack extends Model<InferAttributes<PagesToTrack>, InferCreationAtt
     declare texto_clave: CreationOptional<string>;
     declare userId: ForeignKey<UserData['id']>;
     declare activo: CreationOptional<boolean>;
+    declare notifEmail: CreationOptional<boolean>;
+    declare notifWhatsapp: CreationOptional<boolean>;
+    declare tiempoEspera: CreationOptional<number>;
     // marcas de tiempo
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -81,7 +84,7 @@ PagesToTrack.init({
     allowNull: true
   },
   texto_analisis: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT('long'),
     allowNull: true
   },
   texto_clave: {
@@ -95,6 +98,19 @@ PagesToTrack.init({
   activo: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  notifEmail: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  notifWhatsapp: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  tiempoEspera: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: false,
+    defaultValue: 2000
   },
   createdAt: DataTypes.DATE,
   updatedAt: DataTypes.DATE,

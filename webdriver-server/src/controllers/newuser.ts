@@ -11,6 +11,7 @@ import { validationResult, check } from 'express-validator';
 import { SCREENSHOTS_DIR, BASEIMAGE_DIR } from '@project/server/app/util/constants';
 import { CreationAttributes } from 'sequelize';
 import { PagesToTrack, ScheduledTrackingResults, UserData } from '@project/server/app/models';
+import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
 
 export const createNewUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
@@ -23,13 +24,12 @@ export const createNewUser = async (req: Request, res: Response, next: NextFunct
       frecuencia: yup.number().required('Por favor, introduce la frecuencia'),
       diferenciaAlerta: yup.number().required('Requerimos de un porcentaje de diferencia para enviar alertas'),
       modo: yup.string().required('Se requiere el modo para monitoreo'),
+      tiempoEspera: yup.number(),
       corte_x: yup.number(),
       corte_y: yup.number(),
       corte_ancho: yup.number(),
       corte_alto: yup.number(),
-      preacciones: yup.object(),
-      texto_analisis: yup.string(),
-      texto_clave: yup.string(),
+      preacciones: yup.array()
     });
 
     await schema.validate(req.body, { abortEarly: true });
@@ -53,11 +53,19 @@ export const createNewUser = async (req: Request, res: Response, next: NextFunct
     // Crear pagina a monitorear
     const pagesPayload: CreationAttributes<PagesToTrack> = req.body;
     pagesPayload.userId = userResult.id;
+    pagesPayload.url = (pagesPayload.url.indexOf('://') === -1) ? 'https://' + pagesPayload.url : pagesPayload.url;
+    if(req.body.modo.toLowerCase() === 'texto'){
+      const webDriverInstance = WebdriverInstances.get(req.session.id);
+      const browser = webDriverInstance?.browser as WebdriverIO.Browser;
+      const bodyText = await (await browser.$('//body')).getText();
+      pagesPayload.texto_analisis = bodyText;
+    }
+    
     // Sumar segundos a la fecha
     const currentDate = new Date();
     req.body.siguienteComprobacion = currentDate;
     // Mover imagen de screenshots a la carpeta de imagenes base
-    const newFileLocation = path.join(BASEIMAGE_DIR, `${req.session.browserId}-base.png`);
+    const newFileLocation = path.join(BASEIMAGE_DIR, `${req.session.browserId}-${Date.now()}-base.png`);
     fs.renameSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), newFileLocation);
     // Guardar la ubicacion de la imagen
     req.body.imageBasePath = newFileLocation;

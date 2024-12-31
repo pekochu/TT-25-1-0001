@@ -39,6 +39,32 @@ export const createUserData = async (req: Request, res: Response, next: NextFunc
   
 };
 
+export const updateUserData = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      email: yup.string().email().required('Por favor, introduce una cadena de texto con formato de correo electronico'),
+      telefono: yup.string(),
+    });
+
+    const isValid = await schema.isValid(req.body);
+    if (!(isValid)){
+      throw new ValidationError();
+    }
+
+    const payload:CreationAttributes<UserData> = req.body;
+
+    const result = await UserDataService.update(req.session.user?.id as number, payload);
+    if(!result) {
+      throw (new BadRequestError('No se pudo actualizar'));
+    } else {
+      res.status(200).send({ success: true, statusCode: 200, data: result });
+    }
+  } catch(error){
+    next(error);
+  }
+  
+};
+
 export const getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
     const result = await UserDataService.getAll({includeDeleted: true});

@@ -9,6 +9,7 @@ class ScheduledTrackingResults extends Model<InferAttributes<ScheduledTrackingRe
     declare diferencia: CreationOptional<number>
     declare imageChequeoPath: CreationOptional<string>
     declare imageDiferenciaPath: CreationOptional<string>
+    declare nuevo_texto: CreationOptional<string>
     declare tiempoChequeo: Date
     declare userId: ForeignKey<UserData['id']>;
     declare userData?: NonAttribute<UserData>;
@@ -46,6 +47,10 @@ ScheduledTrackingResults.init({
   },
   imageDiferenciaPath: {
     type: DataTypes.STRING,
+    allowNull: true
+  },
+  nuevo_texto: {
+    type: DataTypes.TEXT('long'),
     allowNull: true
   },
   tiempoChequeo: {

@@ -32,7 +32,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       msg = `Es necesario activar su cuenta. Revise su bandeja de entrada (${result.email}) para que pueda iniciar sesión en el sistema y activaremos su cuenta en el proceso.`;
     }
 
-    // Crear resultados
+    // Crear sesión
     const session = {
       id: result.id,
       email: result.email,
@@ -178,6 +178,7 @@ export const currentUser = async (req: Request, res: Response, next: NextFunctio
     const schema = yup.object().shape({
       token: yup.string().required('El accessToken es requerido')
     });
+    logger.info(req.body);
     // Validar datos del formulario
     await schema.validate(req.body, { abortEarly: true });
     // Obtener y guardar el token

@@ -5,6 +5,7 @@ import path from 'path';
 import fetch from 'node-fetch';
 import * as yup from 'yup';
 import logger from '@project/server/app/util/logger';
+import sharp from 'sharp';
 import { Response, Request, NextFunction } from 'express';
 import { ValidationError, BadRequestError, InternalServerError } from '@project/server/app/util/apierror';
 import { validationResult, check } from 'express-validator';
@@ -43,17 +44,26 @@ export const getBaseImage = async (req: Request, res: Response, next: NextFuncti
     await schema.validate(req.params, { abortEarly: true });
     const params = req.params;
 
-    const result = await ScheduledTrackingResultsService.getScreenshotsById(parseInt(params.resultId));
-    if(!(result as any).resultsPage){
+    const result:any = await ScheduledTrackingResultsService.getScreenshotsById(parseInt(params.resultId));
+    if(!result.resultsPage){
       throw (new InternalServerError('No se pudo extraer el imageBasePath de la página asociada a este resultado\n'));
     }
     const img = fs.readFileSync((result as any).resultsPage.imageBasePath, {flag: 'r',});
+    let baseimg = undefined;
+    if(result.resultsPage?.corte_x !== null && result.resultsPage?.corte_alto !== null){
+      const imgBaseBuffer = await sharp(img)
+        .extract({ left: result.resultsPage?.corte_x, top: result.resultsPage?.corte_y, width: result.resultsPage?.corte_ancho, height: result.resultsPage?.corte_alto })
+        .toBuffer();
+      baseimg = imgBaseBuffer;
+    } else {
+      baseimg = img;
+    }
     res.writeHead(200, {
       'x-escomonitor-image-path': (result as any).resultsPage.imageBasePath,
       'Content-Type': 'image/png',
-      'Content-Length': img.length
+      'Content-Length': baseimg.length
     });
-    res.end(img);
+    res.end(baseimg);
      
   } catch(error){
     logger.error(`[Screenshot] Error: ${error}`);
@@ -70,7 +80,6 @@ export const getNewImage = async (req: Request, res: Response, next: NextFunctio
     const params = req.params;
 
     const result = await ScheduledTrackingResultsService.getScreenshotsById(parseInt(params.resultId));
-    logger.info(result);
     if(!result.imageChequeoPath){
       throw (new InternalServerError('No se pudo extraer el imageChequeoPath del resultado\n'));
     }
@@ -97,7 +106,32 @@ export const getDifferenceImage = async (req: Request, res: Response, next: Next
     const params = req.params;
 
     const result = await ScheduledTrackingResultsService.getScreenshotsById(parseInt(params.resultId));
-    logger.info(result);
+    if(!result.imageDiferenciaPath){
+      throw (new InternalServerError('No se pudo extraer el imageDiferenciaPath del resultado\n'));
+    }
+    const img = fs.readFileSync(result.imageDiferenciaPath, {flag: 'r',});
+    res.writeHead(200, {
+      'x-escomonitor-image-path': result.imageDiferenciaPath,
+      'Content-Type': 'image/png',
+      'Content-Length': img.length
+    });
+    res.end(img);
+     
+  } catch(error){
+    logger.error(`[Screenshot] Error: ${error}`);
+    next(error);
+  }
+};
+
+export const getDifferenceImageForMI = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      resultId: yup.string().required('resultId requerido')
+    });
+    await schema.validate(req.params, { abortEarly: true });
+    const params = req.params;
+
+    const result = await ScheduledTrackingResultsService.getScreenshotsByUuid(params.resultId);
     if(!result.imageDiferenciaPath){
       throw (new InternalServerError('No se pudo extraer el imageDiferenciaPath del resultado\n'));
     }

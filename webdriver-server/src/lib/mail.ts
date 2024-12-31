@@ -246,13 +246,55 @@ export function generateDifferenceDetectedBodyHTML(params: { url: string; pagina
     <tr>
       <td align="center"
         style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
-        Se han detectado cambios en la página <strong>${url}</strong>
+        Se han detectado cambios visuales en la página <strong>${url}</strong>
       </td>
     </tr>
     <tr>
       <td align="center"
         style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
         Revisa los archivos adjuntos para checar la imagen base, la imagen actual y la imagen con las diferencias resaltadas.
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Descripción de la página: ${pagina ? pagina : ''}
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Diferencia: ${diferencia}%
+      </td>
+    </tr>
+  </table>
+  <span style="opacity: 0">${randomStr}</span>
+</body>
+`;
+}
+
+export function generateTextDifferenceDetectedBodyHTML(params: { url: string; pagina: string; diferencia:string; theme: { brandColor?: string; buttonText?: string; } }): string{
+  const { url, theme, pagina, diferencia } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
+  return `
+<body style="background: ${color.background};">
+  <span style="opacity: 0">${randomStr}</span>
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Se han detectado cambios de texto en la página <strong>${url}</strong>
       </td>
     </tr>
     <tr>

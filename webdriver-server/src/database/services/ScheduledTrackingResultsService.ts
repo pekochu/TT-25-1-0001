@@ -19,6 +19,10 @@ export const getScreenshotsById = (id: number): Promise<ScheduledTrackingResults
   return scheduledTrackingDal.getScreenshotsById(id);
 };
 
+export const getScreenshotsByUuid = (id: string): Promise<ScheduledTrackingResults> => {
+  return scheduledTrackingDal.getScreenshotsByUuid(id);
+};
+
 export const getByTiempoChequeo = (): Promise<ScheduledTrackingResults[]> => {
   return scheduledTrackingDal.getByTiempoChequeo();
 };

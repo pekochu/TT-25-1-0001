@@ -13,6 +13,7 @@ import { CreatePagesToTrackDTO } from '@project/server/app/dto/pagestotrack.dto'
 import * as PagesToTrackService from '@project/server/app/database/services/PagesToTrackService';
 import { CreationAttributes, Op } from 'sequelize';
 import { PagesToTrack, ScheduledTrackingResults } from '@project/server/app/models';
+import WebdriverInstances from '@project/server/webdriver/instances-webdriver';
 
 export const createPagesToTrack = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
@@ -22,13 +23,12 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
       frecuencia: yup.number().required('Por favor, introduce la frecuencia'),
       diferenciaAlerta: yup.number().required('Requerimos de un porcentaje de diferencia para enviar alertas'),
       modo: yup.string().required('Se requiere el modo para monitoreo'),
+      tiempoEspera: yup.number(),
       corte_x: yup.number(),
       corte_y: yup.number(),
       corte_ancho: yup.number(),
       corte_alto: yup.number(),
-      preacciones: yup.object(),
-      texto_analisis: yup.string(),
-      texto_clave: yup.string(),
+      preacciones: yup.array()
     });
 
     await schema.validate(req.body, { abortEarly: true });
@@ -39,15 +39,22 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
     // Sumar segundos a la fecha
     const currentDate = new Date();
     // Mover imagen de screenshots a la carpeta de imagenes base
-    const newFileLocation = path.join(BASEIMAGE_DIR, `${req.session.browserId}-base.png`);
+    const newFileLocation = path.join(BASEIMAGE_DIR, `${req.session.browserId}-${Date.now()}-base.png`);
     fs.renameSync(path.join(SCREENSHOTS_DIR, `${req.session.browserId}-screenshot.png`), newFileLocation);
     // Guardar la ubicacion de la imagen
     req.body.imageBasePath = newFileLocation;
-    req.body.userId = 1;
+    req.body.userId = req.session.user?.id,
     logger.info(`Session: ${req.session}`);
     logger.info(req.session);
     // Validar la peticion
-    const payload:CreatePagesToTrackDTO = req.body;
+    const payload: CreationAttributes<PagesToTrack> = req.body;
+    payload.url = (payload.url.indexOf('://') === -1) ? 'https://' + payload.url : payload.url;
+    if(req.body.modo.toLowerCase() === 'texto'){
+      const webDriverInstance = WebdriverInstances.get(req.session.id);
+      const browser = webDriverInstance?.browser as WebdriverIO.Browser;
+      const bodyText = await (await browser.$('//body')).getText();
+      payload.texto_analisis = bodyText;
+    }
     const result = await PagesToTrackService.create(payload as CreationAttributes<PagesToTrack>);
     
     if(!result) {
@@ -56,12 +63,11 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
       // Crear resultados
       const jobs : CreationAttributes<ScheduledTrackingResults>[] = [];
       for(let i = 0; i < 12; i++){
-        logger.info((parseInt(result.frecuencia) * (i + 1)));
         const nuevaFecha = new Date(currentDate);
         nuevaFecha.setSeconds(currentDate.getSeconds() + (parseInt(req.body.frecuencia) * (i + 1)));
         jobs.push({
           tiempoChequeo: nuevaFecha,
-          userId: 1,
+          userId: req.session.user?.id,
           pagesToTrackId: result.id
         });
       }
@@ -73,6 +79,35 @@ export const createPagesToTrack = async (req: Request, res: Response, next: Next
   }
   
 };
+
+export const updatePagesToTrack = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      id: yup.number().required('Por favor, introduce la ID'),
+      frecuencia: yup.number().required('Por favor, introduce la frecuencia'),
+      diferenciaAlerta: yup.number().required('Requerimos de un porcentaje de diferencia para enviar alertas'),
+      // modo: yup.string().required('Se requiere el modo para monitoreo'),
+      notifEmail: yup.bool(),
+      notifWhatsapp: yup.bool(),
+    });
+    // Sumar segundos a la fecha
+    const currentDate = new Date();
+    await schema.validate(req.body, { abortEarly: true });
+    // Validar la peticion
+    const payload: CreationAttributes<PagesToTrack> = req.body;
+    const result = await PagesToTrackService.update(req.body.id, req.body);
+    
+    if(!result) {
+      throw (new BadRequestError('Error al actualizar'));
+    } else {
+      res.status(200).send({ success: true, statusCode: 200, data: result });
+    }
+  } catch(error){
+    next(error);
+  }
+  
+};
+
 
 export const getPagesToTrack = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try{
@@ -99,7 +134,7 @@ export const getSinglePage = async (req: Request, res: Response, next: NextFunct
     await schema.validate(req.params, { abortEarly: true });
     const params = req.params;
   
-    const result = await PagesToTrackService.getById(parseInt(params.pageId))
+    const result = await PagesToTrackService.getByIdWithResults(parseInt(params.pageId))
     if(!result) {
       throw (new BadRequestError('Error al obtener página'));
     } else {

@@ -13,10 +13,12 @@ import { SCREENSHOTS_DIR } from '@project/server/app/util/constants';
 import { InternalServerError } from '@project/server/app/util/apierror';
 import { PNG } from 'pngjs';
 import { BASEIMAGE_DIR } from '@project/server/app/util/constants';
-import GenerateXpathExpression from '../webdriver/GenerateXpathExpression';
+import GenerateXpathExpression from '@project/server/webdriver/GenerateXpathExpression';
+import { sendTest } from '@project/server/app/lib/twilio';
 
 export const getApi = async (req: Request, res: Response): Promise<void> => {
-  res.json({ title: 'TT Monitor :)' });   
+  await sendTest();  
+  res.json({ title: 'TT Monitor :)' }); 
 };
 
 export const goToUrl = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -227,4 +229,105 @@ export const pointAtElement = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const performActions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const schema = yup.object().shape({
+      preacciones: yup.array().required('Por favor, introduce las acciones')
+    });
+    
+    await schema.validate(req.body, { abortEarly: true });
+    const webDriverInstance = WebdriverInstances.get(req.session.id);
+    if(!webDriverInstance) {
+      throw new InternalServerError('El navegador no fue inicializado');
+    }   
+    const browser = webDriverInstance.browser as WebdriverIO.Browser;
+    browser.url(req.body.url);
+    for(const accion of req.body.preacciones){
+      const isXpathValid = (await browser.$$(accion.value)).length > 0;
+      let selectorAlias: string;
+      const xpath = [];
+      if(isXpathValid){
+        xpath.push(accion.value);
+        selectorAlias = accion.value;
+      } else {
+        const generateXpathExpression = new GenerateXpathExpression(browser);
+        selectorAlias = `//*[name(.) and contains(text(), '${accion.value}')]`;
+        const elements = await browser.$$(selectorAlias);
+        console.log(`Elementos encontrados inicialmente: ${elements.length}`);
+        for(const element of elements){
+          const xpathResult = await generateXpathExpression.getXpath(element);
+          xpath.push(xpathResult);   
+        }
+      }
+
+      if(accion.action == 'click'){
+        (await browser.$(xpath[0])).click();
+        await browser.waitUntil(
+          () => browser.execute(() => document.readyState === 'complete'),
+          {
+            timeout: 20 * 1000, // 20 segundos
+            timeoutMsg: 'Error al cargar sitio web'
+          }
+        );
+        (await browser.pause(200));
+      } else if(accion.action == 'doubleclick'){
+        (await browser.$(xpath[0])).doubleClick();
+        await browser.waitUntil(
+          () => browser.execute(() => document.readyState === 'complete'),
+          {
+            timeout: 20 * 1000, // 20 segundos
+            timeoutMsg: 'Error al cargar sitio web'
+          }
+        );
+        (await browser.pause(200));
+      }else if(accion.action == 'wait'){
+        (await browser.pause(parseInt(accion.value) * 1000));
+        await browser.waitUntil(
+          () => browser.execute(() => document.readyState === 'complete'),
+          {
+            timeout: 20 * 1000, // 20 segundos
+            timeoutMsg: 'Error al cargar sitio web'
+          }
+        );
+        (await browser.pause(200));
+      }else if(accion.action == 'refresh'){
+        (await browser.refresh());
+        await browser.waitUntil(
+          () => browser.execute(() => document.readyState === 'complete'),
+          {
+            timeout: 20 * 1000, // 20 segundos
+            timeoutMsg: 'Error al cargar sitio web'
+          }
+        );
+        (await browser.pause(200));
+      }else if(accion.action == 'scroll'){
+        (await browser.scroll(0, 99999));
+        await browser.waitUntil(
+          () => browser.execute(() => document.readyState === 'complete'),
+          {
+            timeout: 20 * 1000, // 20 segundos
+            timeoutMsg: 'Error al cargar sitio web'
+          }
+        );
+        (await browser.pause(200));
+      }else if(accion.action == 'goto'){
+        const url = (accion.value.indexOf('://') === -1) ? 'https://' + accion.value : accion.value;
+        (await browser.url(url));
+        await browser.waitUntil(
+          () => browser.execute(() => document.readyState === 'complete'),
+          {
+            timeout: 20 * 1000, // 20 segundos
+            timeoutMsg: 'Error al cargar sitio web'
+          }
+        );
+        (await browser.pause(200));
+      }
+    }
+    
+    
+    res.status(200).send({ success: true, statusCode: 200, data: 'Performed' });
+  } catch(error){
+    next(error);
+  }
+};
 

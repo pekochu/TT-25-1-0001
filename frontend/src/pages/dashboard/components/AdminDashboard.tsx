@@ -24,7 +24,7 @@ import ReactCrop from 'react-image-crop';
 import useSWR, { SWRConfig } from 'swr';
 import Cookies from 'universal-cookie';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiSettings, FiStopCircle, FiTrash } from 'react-icons/fi';
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_WEB_SCREENSHOT_URL } from '@/lib/constants';
 import fetcher from '@/util/fetcher';
 import Usuarios from './AdminUsuarios';
 import Paginas from './AdminPaginas';

@@ -31,6 +31,7 @@ export const verifyToken = (
           id: userDecoded.id,
           email: userDecoded.email,
           nombre: userDecoded.nombre,
+          rol: userDecoded.rol
         };
         resolve(userSession);
       });

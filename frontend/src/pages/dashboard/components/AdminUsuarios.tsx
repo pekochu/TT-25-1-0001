@@ -24,7 +24,7 @@ import ReactCrop from 'react-image-crop';
 import { KeyedMutator } from 'swr'
 import Cookies from 'universal-cookie';
 import { FiMoreVertical, FiMail, FiCheckCircle, FiPlayCircle, FiPlusCircle, FiSearch, FiStopCircle, FiTrash } from 'react-icons/fi';
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_WEB_SCREENSHOT_URL } from '@/lib/constants';
 import fetcher from '@/util/fetcher';
 import { useAuth } from '@/providers/auth/AuthProvider';
 

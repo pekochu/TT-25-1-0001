@@ -24,9 +24,10 @@ import ReactCrop from 'react-image-crop';
 import { KeyedMutator } from 'swr'
 import Cookies from 'universal-cookie';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiStopCircle, FiTrash } from 'react-icons/fi';
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_WEB_SCREENSHOT_URL } from '@/lib/constants';
 import fetcher from '@/util/fetcher';
 import { useAuth } from '@/providers/auth/AuthProvider';
+import moment from 'moment';
 
 interface IResultadosListaProps {
   resultados?: any
@@ -52,14 +53,14 @@ const ResultadoItem = ({
   onClick: (show: boolean) => void
 }) => {
   const { currentUser } = useAuth()
-
+  moment.locale('es-mx');
   return (
     <ListGroup.Item action className="d-flex justify-content-between align-items-start" onClick={() => { onSelect(resultado), onClick(true) }}>
       <div className="ms-2 me-auto">
         <div className="fw-bold">Diferencia encontrada: {resultado.diferencia}%</div>
-        Monitoreo realizado el: {resultado.tiempoChequeo}
+        Monitoreo realizado el {moment(resultado.tiempoChequeo).format('DD/MM/YYYY [a las] h:mm:ss a')}
       </div>
-      <small>
+      {/* <small>
         <DropdownButton
           variant="link"
           title={<FiMoreVertical />}
@@ -67,7 +68,7 @@ const ResultadoItem = ({
         >
           <Dropdown.Item onClick={() => undefined}><FiStopCircle /> Ver detalles</Dropdown.Item>
         </DropdownButton>
-      </small>
+      </small> */}
     </ListGroup.Item>
   )
 }
@@ -142,7 +143,18 @@ export default function ListaResultados({
 
   const onErrorFun = (msg: string) => msg;
 
-  if (isLoading || !resultados) {
+  if (error || !resultados) {
+    return (
+      <Alert variant="danger">
+        <Alert.Heading>¡Un error!</Alert.Heading>
+        <p>
+          Parece que aún no hay resultados de monitoreo para mostrar.
+        </p>
+      </Alert>
+    )
+  }
+
+  if (isLoading) {
     return (
       <ListGroup>
         <ListGroup.Item as='li' className="d-flex justify-content-between align-items-start">
@@ -167,16 +179,7 @@ export default function ListaResultados({
     )
   }
 
-  if (error) {
-    return (
-      <Alert variant="danger">
-        <Alert.Heading>¡Un error!</Alert.Heading>
-        <p>
-          Ha ocurrido un error tratando de obtener tus páginas a monitorear.
-        </p>
-      </Alert>
-    )
-  }
+
 
   return (
     <>

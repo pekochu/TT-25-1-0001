@@ -60,6 +60,25 @@ export const getScreenshotsById = async (id: number): Promise<ScheduledTrackingR
   return scheduled;
 };
 
+export const getScreenshotsByUuid = async (id: string): Promise<ScheduledTrackingResults> => {
+  const scheduled = await ScheduledTrackingResults.findOne({
+    where:{
+      uuid: id
+    },
+    include: [{
+      model: PagesToTrack,
+      as: 'resultsPage'
+    }]
+  });
+
+  if (!scheduled) {
+    // @todo throw custom error
+    throw new Error('not found');
+  }
+
+  return scheduled;
+};
+
 export const getByTiempoChequeo = async (): Promise<ScheduledTrackingResults[]> => {
   const current = new Date();
   const scheduled = await ScheduledTrackingResults.findAll({

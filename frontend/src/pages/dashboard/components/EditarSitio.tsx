@@ -17,7 +17,7 @@ import Skeleton from 'react-loading-skeleton'
 import React, { useEffect, useId, useState } from 'react';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiStopCircle, FiTrash } from 'react-icons/fi';
 import ReactCrop from 'react-image-crop'
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_WEB_SCREENSHOT_URL, API_WEB_GOTO_URL, API_V1_PAGES } from '@/lib/constants';
 
 
 interface ISubmitNewPaginaProps {
@@ -39,7 +39,7 @@ export default function EditarPaginaModal({ show, setShow }: ISubmitNewPaginaPro
   const [img, setImg] = useState('/imagen foto navegador.png');
 
   const getSnapshot = async () => {
-    const res = await fetch(generateApiUrl(API_SCREENSHOT_URL), { credentials: 'include', });
+    const res = await fetch(generateApiUrl(API_WEB_SCREENSHOT_URL), { credentials: 'include', });
     const imageBlob = await res.blob();
     const imageObjectURL = URL.createObjectURL(imageBlob);
     setImg(imageObjectURL);
@@ -54,7 +54,7 @@ export default function EditarPaginaModal({ show, setShow }: ISubmitNewPaginaPro
     const urlParams = new URLSearchParams({ url: form.url.value });
     setScreenshotLoading(true);
     // Solicitamos el screenshot del navegador
-    const result = await fetch('http://localhost:3000/api/v1/goto?' + urlParams.toString(), { credentials: 'include', });
+    const result = await fetch(generateApiUrl(API_WEB_GOTO_URL) + '?' + urlParams.toString(), { credentials: 'include', });
     await getSnapshot();
   };
 
@@ -69,7 +69,7 @@ export default function EditarPaginaModal({ show, setShow }: ISubmitNewPaginaPro
     }
     setUserDataLoading(true);
     // Registramos usuario
-    await fetch('http://localhost:3000/api/v1/user', { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
+    await fetch(generateApiUrl(API_V1_PAGES), { credentials: 'include', method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
       .then((respose) => respose.json())
       .then((respose) => {
         console.log(respose.data)

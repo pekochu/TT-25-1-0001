@@ -24,7 +24,7 @@ import ReactCrop from 'react-image-crop';
 import useSWR, { SWRConfig } from 'swr';
 import Cookies from 'universal-cookie';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiSettings, FiStopCircle, FiTrash } from 'react-icons/fi';
-import { generateApiUrl, API_SCREENSHOT_URL } from '@/lib/constants';
+import { generateApiUrl, API_WEB_SCREENSHOT_URL, API_V1_PAGES } from '@/lib/constants';
 import fetcher from '@/util/fetcher';
 import Paginas from './Paginas';
 import Resultados from './Resultados';
@@ -55,9 +55,13 @@ export default function DashboardComponent() {
   const [img, setImg] = useState('/imagen foto navegador.png');
   const [frecuencia, setFrecuencia] = useState('60');
   const [diferencia, setDiferencia] = useState('1');
+  const [tipoComparacion, setTipoComparacion] = useState('visual');
+  const [notifCorreo, setNotifCorreo] = useState(true);
+  const [notifWhats, setNotifWhats] = useState(false);
 
   const cargarDetallesPagina = async (pag: any) => {
     console.log(`Here`);
+    console.log(pag);
     let diferenciaAlerta = '0';
     switch (pag.diferenciaAlerta) {
       case 0:
@@ -79,8 +83,11 @@ export default function DashboardComponent() {
         diferenciaAlerta = '5';
         break;
     }
-    setFrecuencia(pag.frecuencia);
-    setDiferencia(diferenciaAlerta);
+    setFrecuencia(`${pag.frecuencia}`);
+    setDiferencia(`${diferenciaAlerta}`);
+    setTipoComparacion(pag.modo);
+    setNotifWhats(!!pag.notifWhatsapp);
+    setNotifCorreo(!!pag.notifEmail);
     // Cargar imagen
     const res = await fetch(generateApiUrl(`/api/v1/pages/${pag.id}/getBaseImage`), {
       method: 'GET',
@@ -95,6 +102,51 @@ export default function DashboardComponent() {
     setImg(imageObjectURL);
     setScreenshotLoading(false);
     setVerticalOverflow(true);
+  };
+
+  const actualizarPagina = async (event: any) => {
+    let diferenciaAlerta = 0;
+    switch (diferencia) {
+      case '0':
+        diferenciaAlerta = 0;
+        break;
+      case '1':
+        diferenciaAlerta = 1;
+        break;
+      case '2':
+        diferenciaAlerta = 10;
+        break;
+      case '3':
+        diferenciaAlerta = 25;
+        break;
+      case '4':
+        diferenciaAlerta = 50;
+        break;
+      case '5':
+        diferenciaAlerta = 80;
+        break;
+    }
+    const body: Record<string, any> = {
+      "id": paginaSeleccionada.id,
+      "frecuencia": frecuencia,
+      "diferenciaAlerta": diferenciaAlerta,
+      "notifEmail": notifCorreo,
+      "notifWhatsapp": notifWhats,
+    };
+    console.log(body);
+    setUserDataLoading(true);
+    // Registramos usuario
+    await fetch(generateApiUrl(API_V1_PAGES), { credentials: 'include', method: 'PATCH', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } })
+      .then((respose) => respose.json())
+      .then((respose) => {
+        console.log(respose.data)
+        setUserDataLoading(false)
+      })
+      .catch(() => {
+        console.log("No fue posible registrar una nueva página");
+        setUserDataLoading(false);
+      });
+
   };
 
   const {
@@ -150,13 +202,13 @@ export default function DashboardComponent() {
               </Card>
             </Col>
             <Col lg='7'>
-              {paginaSeleccionada ? (
-                <Card border='warning'>
+              {paginaSeleccionada ? <>
+                <Card border='warning' key={paginaSeleccionada.id}>
                   <Card.Header>
                     <Stack direction="horizontal" gap={3}>
                       <span className="me-auto">{paginaSeleccionada.url} | {paginaSeleccionada.descripcion}</span>
                       <div className="vr" />
-                      <Button variant="primary" className="" onClick={() => showEditarSitioModal(true)}><FiSettings /> Configuración</Button>{' '}
+                      <Button variant="primary" className="" onClick={(e) => actualizarPagina(e)}><FiSettings /> Guardar</Button>{' '}
                     </Stack>
 
                   </Card.Header>
@@ -177,8 +229,15 @@ export default function DashboardComponent() {
                                     <option value="10">10 segundos</option>
                                     <option value="30">30 segundos</option>
                                     <option value="60">1 minuto</option>
-                                    <option value="300">5 minuto</option>
-                                    <option value="600">10 minuto</option>
+                                    <option value="300">5 minutos</option>
+                                    <option value="600">10 minutos</option>
+                                    <option value="900">15 minutos</option>
+                                    <option value="1800">30 minutos</option>
+                                    <option value="3600">1 hora</option>
+                                    <option value="10800">3 horas</option>
+                                    <option value="21600">6 horas</option>
+                                    <option value="43200">12 horas</option>
+                                    <option value="86400">Diario</option>
                                   </Form.Select>
                                 </InputGroup>
                               </Form.Group>
@@ -209,15 +268,48 @@ export default function DashboardComponent() {
                                     <div key='inline-radio' className="mb-3">
                                       <Form.Check
                                         inline
+                                        disabled
                                         label="Visual"
                                         name="group1"
                                         type='radio'
+                                        defaultChecked={tipoComparacion.toLowerCase() === 'visual'}
                                       />
                                       <Form.Check
                                         inline
+                                        disabled
                                         label="Texto"
                                         name="group1"
                                         type='radio'
+                                        defaultChecked={tipoComparacion.toLowerCase() === 'texto'}
+                                      />
+                                    </div>
+                                  </div>
+                                </InputGroup>
+                              </Form.Group>
+                            </Row>
+                            <Row>
+                              <Form.Group className="mb-0" controlId={diferenciaId}>
+                                <Form.Label>Notificaciones</Form.Label>
+                                <InputGroup className="mb-3">
+                                  <div className="">
+                                    <div key='inline-radio' className="mb-3">
+                                      <Form.Check // prettier-ignore
+                                        type="switch"
+                                        id="custom-switch"
+                                        label="Por correo electrónico"
+                                        defaultChecked={notifCorreo}
+                                        onChange={(e) => {
+                                          setNotifCorreo(e.target.checked)
+                                        }}
+                                      />
+                                      <Form.Check // prettier-ignore
+                                        type="switch"
+                                        label="Por WhatsApp"
+                                        id="disabled-custom-switch"
+                                        defaultChecked={notifWhats}
+                                        onChange={(e) => {
+                                          setNotifWhats(e.target.checked)
+                                        }}
                                       />
                                     </div>
                                   </div>
@@ -246,18 +338,18 @@ export default function DashboardComponent() {
                     </div>
                   </Card.Body>
                 </Card>
-              ) : (
+              </> : <>
                 <Card border='danger' className="text-center">
                   <Card.Header>¡Hola!</Card.Header>
                   <Card.Body>
-                    <Card.Title>Cambios detectados y futuros chequeos</Card.Title>
+                    <Card.Title>Cambios detectados</Card.Title>
                     <Card.Text>
                       Selecciona una página para ver los cambios detectados y la programación de futuros chequeos.
                     </Card.Text>
                   </Card.Body>
                   <Card.Footer className="text-muted">ESCOMONITOR</Card.Footer>
                 </Card>
-              )}
+              </>}
 
             </Col>
           </Row>
@@ -267,7 +359,7 @@ export default function DashboardComponent() {
       </main >
       <SubmitNewPaginaModal show={newPaginaModal} setShow={showNewPaginaModal} />
       <EditarSitioModal show={editarSitioModal} setShow={showEditarSitioModal} />
-      <DetallesResultadosModal show={verDetallesResultadosModal} resultado={resultadoSeleccionado} setShow={showDetallesResultadosModal} />
+      <DetallesResultadosModal show={verDetallesResultadosModal} resultado={resultadoSeleccionado} pagina={paginaSeleccionada} setShow={showDetallesResultadosModal} />
     </SWRConfig>
   );
 }

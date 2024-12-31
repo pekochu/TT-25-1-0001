@@ -23,7 +23,11 @@ export const update = async (id: number, payload: Partial<CreationAttributes<Pag
 };
 
 export const getById = async (id: number): Promise<PagesToTrack> => {
-  const pageToTrack = await PagesToTrack.findByPk(id, {
+  const pageToTrack = await PagesToTrack.findOne({
+    where: {
+      id,
+
+    },
     include: [{
       model: ScheduledTrackingResults.scope('withoutPaths'),
       as: 'managedPagesResults'
@@ -46,7 +50,10 @@ export const getByIdWithResults = async (id: number): Promise<PagesToTrack> => {
   const pageToTrack = await PagesToTrack.findByPk(id, {
     include: [{
       model: ScheduledTrackingResults.scope('withoutPaths'),
-      as: 'managedPagesResults'
+      as: 'managedPagesResults',
+      where: {
+        diferencia: {[Op.gt]: 0,}
+      }
     }],
     order: [
       // We start the order array with the model we want to sort

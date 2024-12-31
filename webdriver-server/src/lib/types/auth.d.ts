@@ -2,6 +2,7 @@ type User = {
     id: number
     nombre: string
     email: string
+    rol: number
     refreshToken: string
   }
   

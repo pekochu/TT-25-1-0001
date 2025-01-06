@@ -15,7 +15,7 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 3033,
-        exec_mode: 'fork_mode',
+        exec_mode: 'fork',
       },
       env_development: {
         NODE_ENV: 'development',
@@ -50,7 +50,7 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 3034,
-        exec_mode: 'fork_mode',
+        exec_mode: 'fork',
       },
       env_development: {
         NODE_ENV: 'development',

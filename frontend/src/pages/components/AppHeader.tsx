@@ -26,16 +26,16 @@ export default function Header() {
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
                 <Nav.Link href="/">Inicio</Nav.Link>
-                {/* <Nav.Link href="#link">Contacto</Nav.Link>
+                <Nav.Link href="/contacto">Contacto</Nav.Link>
                 <Nav.Link href="/about">Acerca de</Nav.Link>
-                <NavDropdown title="Ejemplo de Menú" id="basic-nav-dropdown">
+                {/* <NavDropdown title="Ejemplo de Menú" id="basic-nav-dropdown">
                   <NavDropdown.Item href="#action/3.1">Opción 1</NavDropdown.Item>
                   <NavDropdown.Item href="#action/3.2">Opción 2</NavDropdown.Item>
                   <NavDropdown.Item href="#action/3.3">Opción 3</NavDropdown.Item>
                   <NavDropdown.Divider />
                   <NavDropdown.Item href="contacto">
                     Opción separada
-                  </NavDropdown.Item>
+                  </NavDropdown.Item> 
                 </NavDropdown>
                 */}
               </Nav>

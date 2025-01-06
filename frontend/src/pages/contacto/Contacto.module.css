@@ -1,0 +1,6 @@
+.form_image {
+    --bsb-overlay-opacity: 0.8;
+    background-image: url('../../../public/ESCOM.png');
+    background-position: center;
+    background-size: cover;
+}

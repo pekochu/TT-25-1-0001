@@ -15,6 +15,8 @@ import { PNG } from 'pngjs';
 import { BASEIMAGE_DIR } from '@project/server/app/util/constants';
 import GenerateXpathExpression from '@project/server/webdriver/GenerateXpathExpression';
 import { sendTest } from '@project/server/app/lib/twilio';
+import { generateSomeoneContactingHTML, generateSomeoneContactingPlain, generateConfirmContactHTML, generateConfirmContactPlain, sendEmail } from '@project/server/app/lib/mail';
+
 
 export const getApi = async (req: Request, res: Response): Promise<void> => {
   await sendTest();  
@@ -71,7 +73,7 @@ export const getScreenshot = async (req: Request, res: Response, next: NextFunct
     res.end(img);
      
   } catch(error){
-    logger.error(`[Screenshot] Error: ${(error as any).getMessage()}`)
+    logger.error(`[Screenshot] Error: ${(error as any).getMessage()}`);
     next(error);
   }
 };
@@ -331,3 +333,47 @@ export const performActions = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const contacto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try{
+    const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+    const contactoSchema = yup.object().shape({
+      nombre: yup.string().min(6).max(20).required(),
+      email: yup.string().email().min(8).required(),
+      telefono: yup.string().min(8).matches(phoneRegExp).required(),
+      asunto: yup.string().min(8).required(),
+      mensaje: yup.string().required()
+    });
+      // Validar datos del formulario
+    const valid = await contactoSchema.validate(req.body, { abortEarly: true });
+
+    // Enviar correo
+    try{
+      await sendEmail({
+        to: 'luisnglbrv@gmail.com',
+        subject: `ESCOMONITOR - Contacto - ${req.body.asunto}`,
+        text: generateSomeoneContactingPlain(req.body.asunto),
+        html: generateSomeoneContactingHTML({ ...req.body, theme: {} }),
+        replyTo: req.body.email
+      });
+    }catch(error){
+      throw (new InternalServerError('No se pudo enviar el correo:\n' + error));
+    }
+    // Notificar a quien nos contacta
+    try{
+      await sendEmail({
+        to: req.body.email,
+        subject: `ESCOMONITOR - Gracias por contactarnos`,
+        text: generateConfirmContactPlain(),
+        html: generateConfirmContactHTML({ ...req.body, theme: {} }),
+      });
+    }catch(error){
+      throw (new InternalServerError('No se pudo enviar el correo:\n' + error));
+    }
+
+    // Enviar datos
+    res.status(200).send({ success: true, data: 'Mensaje recibido' });
+  } catch(error){
+    next(error);
+  }
+    
+};

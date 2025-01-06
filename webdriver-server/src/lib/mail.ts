@@ -3,7 +3,7 @@ import { Options, OptionsAttachment } from './types/mail';
 
 const randomString = () => Math.random().toString(36).substring(2, 12);
 
-export async function sendEmail({ to, subject, text, html }: Options): Promise<any> {
+export async function sendEmail({ to, subject, text, html, replyTo }: Options): Promise<any> {
   // create reusable transporter
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -22,6 +22,7 @@ export async function sendEmail({ to, subject, text, html }: Options): Promise<a
     subject, // Subject line
     text, // plain text body
     html, // html body
+    replyTo
   });
 
   return info;
@@ -171,6 +172,111 @@ export function generateConfirmLoginBodyHTML(params: { url: string; theme: { bra
       <td align="center"
         style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
         Si no solicitaste este correo, es completamente seguro ignorarlo.
+      </td>
+    </tr>
+  </table>
+  <span style="opacity: 0">${randomStr}</span>
+</body>
+`;
+}
+
+export function generateConfirmContactPlain(): string {
+  // generate email body as plain text (no html)
+  return `Muchas gracias por mostrar intéres en este proyecto. Ángel Bravo se pondrá en contacto lo más pronto posible.`;
+}
+
+export function generateConfirmContactHTML(params: { theme: { brandColor?: string; buttonText?: string; } }): string{
+  const { theme } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
+  return `
+<body style="background: ${color.background};">
+  <span style="opacity: 0">${randomStr}</span>
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Has contactado al desarrollador de <strong>ESCOMONITOR</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Muchas gracias por mostrar intéres en este proyecto. Ángel Bravo se pondrá en contacto lo más pronto posible. 
+      </td>
+    </tr>
+  </table>
+  <span style="opacity: 0">${randomStr}</span>
+</body>
+`;
+}
+
+export function generateSomeoneContactingPlain(asunto: string): string {
+  // generate email body as plain text (no html)
+  return `Alguien tiene interes en el trabajo terminal: >> ${asunto} <<`;
+}
+
+export function generateSomeoneContactingHTML(params: { nombre: string, email: string, telefono: string, asunto: string, mensaje: string, theme: { brandColor?: string; buttonText?: string; } }): string{
+  const { nombre, email, telefono, asunto, mensaje, theme } = params;
+  const brandColor = theme.brandColor || '#346df1';
+  const randomStr = randomString();
+  const color = {
+    background: '#f9f9f9',
+    text: '#444',
+    mainBackground: '#fff',
+    buttonBackground: brandColor,
+    buttonBorder: brandColor,
+    buttonText: theme.buttonText || '#fff',
+  };
+
+  return `
+<body style="background: ${color.background};">
+  <table width="100%" border="0" cellspacing="20" cellpadding="0"
+    style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
+    <tr>
+      <td align="center"
+        style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Es <b>${nombre}</b>, con asunto: ${asunto}
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        <h3>Medios de contacto</h3>
+      </td>
+    </tr>
+    <tr>
+      <td 
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Correo electrónico: ${email}
+      </td>
+    </tr>
+    <tr>
+      <td 
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        Teléfono: ${telefono}
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        <h3>Mensaje</h3>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"
+        style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+        ${mensaje}
       </td>
     </tr>
   </table>

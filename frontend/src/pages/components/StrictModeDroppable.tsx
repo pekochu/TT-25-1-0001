@@ -1,6 +1,6 @@
 import { DragDropContext, Droppable, Draggable, DroppableProps } from "react-beautiful-dnd";
 import React, { useEffect, useId, useState } from 'react';
-export const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
+export default function StrictModeDroppable({ children, ...props }: DroppableProps) {
     const [enabled, setEnabled] = useState(false);
 
     useEffect(() => {

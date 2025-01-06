@@ -20,7 +20,7 @@ import ReactCrop, { type Crop } from 'react-image-crop';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiSettings, FiStopCircle, FiTrash, FiAlignJustify } from 'react-icons/fi';
 import { useAuth } from '@/providers/auth/AuthProvider';
 import { generateApiUrl, API_WEB_SCREENSHOT_URL, API_WEB_TITLE, API_WEB_GOTO_URL, API_CREATE_USER_URL, API_WEB_PERFORM_ACTIONS } from '@/lib/constants';
-import { StrictModeDroppable } from '@/pages/components/StrictModeDroppable';
+import StrictModeDroppable from '@/pages/components/StrictModeDroppable';
 
 const getItems = (count: number, offset = 0) =>
   Array.from({ length: count }, (v, k) => k).map(k => ({

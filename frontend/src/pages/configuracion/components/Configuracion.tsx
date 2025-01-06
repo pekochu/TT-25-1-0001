@@ -26,9 +26,14 @@ export default function ConfiguracionComponent({ currentUser }: IConfiguracionPr
 
 
   const [validated, setValidated] = useState(false);
-  const [email, setEmail] = useState(currentUser.email);
+  const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
-  const [userDataLoading, setUserDataLoading] = useState(false);
+  const [userDataLoading, setUserDataLoading] = useState(false)
+
+  if (typeof currentUser !== 'undefined') {
+    setEmail(currentUser.email)
+  }
+
   const actualizar = async (event: any) => {
     event.preventDefault();
     setUserDataLoading(true);

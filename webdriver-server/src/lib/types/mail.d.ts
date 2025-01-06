@@ -3,6 +3,7 @@ export interface Options {
   subject: string
   text: string
   html: string
+  replyTo?: string
 }
 
   export interface OptionsAttachment {

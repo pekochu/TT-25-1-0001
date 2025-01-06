@@ -7,6 +7,7 @@ import ConfiguracionComponent from '@/pages/configuracion/components/Configuraci
 import Loading from '@/pages/dashboard/components/Loading';
 import { useAuth } from '@/providers/auth/AuthProvider';
 import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Cookies from 'universal-cookie';
 import Skeleton from 'react-loading-skeleton';
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
@@ -21,10 +22,11 @@ export default function Configuracion() {
     accessToken,
     refreshToken,
   } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      return;
+    if (!isAuthenticated) {
+      router.push('/');
     }
   }, [isAuthenticated]);
 

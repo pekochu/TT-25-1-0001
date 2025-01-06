@@ -52,8 +52,9 @@ const errorHandler = (error: ApiError, req: Request, res: Response, next: NextFu
 
 // Deshabilitar header 'x-powered-by'
 app.disable('x-powered-by');
-// Tests
+// Hello world y contacto
 app.get('/api/v1', apiController.getApi);
+app.post('/api/v1/contacto', apiController.contacto);
 // Solo admin endpoints
 app.get('/api/v1/users', authAdminMiddleware, usersController.getUsers);
 app.get('/api/v1/users/:userId/pages', authAdminMiddleware, usersController.getPagesByUser);

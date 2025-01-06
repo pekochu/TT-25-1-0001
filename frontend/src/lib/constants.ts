@@ -33,3 +33,6 @@ export const API_V1_PAGES = `/api/v1/pages`;
 
 // Páginas
 export const API_V1_RESULTADOS = `/api/v1/results`;
+
+// Contacto
+export const API_V1_CONTACTO = `/api/v1/contacto`;

@@ -249,13 +249,13 @@ export default function DashboardComponent() {
                                   <Form.Select aria-label="Selector para porcentaje de cambio" aria-describedby={diferenciaId} defaultValue={1} name="diferenciaAlerta" value={diferencia} onChange={(e) => {
                                     setDiferencia(e.target.value)
                                   }}>
-                                    <option disabled={true}>Porcentaje de diferencia para aviso</option>
+                                    <option disabled={true}>El porcentaje de diferencia debe superar este valor para recibir el aviso</option>
                                     <option value="0">Cualquier cambio</option>
-                                    <option value="1">Pequeño (1%)</option>
-                                    <option value="2">Mediano (10%)</option>
-                                    <option value="3">Considerable (25%)</option>
-                                    <option value="4">Grande (50%)</option>
-                                    <option value="5">Enorme (80%)</option>
+                                    <option value="1">Pequeño (mayor al 1%)</option>
+                                    <option value="2">Mediano (mayor al 10%)</option>
+                                    <option value="3">Considerable (mayor al 25%)</option>
+                                    <option value="4">Grande (mayor al 50%)</option>
+                                    <option value="5">Enorme (mayor al 80%)</option>
                                   </Form.Select>
                                 </InputGroup>
                               </Form.Group>

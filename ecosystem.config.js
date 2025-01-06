@@ -4,6 +4,7 @@ module.exports = {
       name: 'ESCOMONITOR_BACKEND',
       script: './webdriver-server/dist/src/server.js',
       instances: 1,
+      exec_mode: 'fork',
       max_memory_restart: '8096M',
       // Logging
       out_file: './out_backend.log',
@@ -15,7 +16,6 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 3033,
-        exec_mode: 'fork',
       },
       env_development: {
         NODE_ENV: 'development',
@@ -39,6 +39,7 @@ module.exports = {
       script: './frontend/node_modules/next/dist/bin/next',
       args: 'start',
       instances: 1,
+      exec_mode: 'fork',
       max_memory_restart: '2048M',
       // Logging
       out_file: './out_frontend.log',
@@ -50,7 +51,6 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 3034,
-        exec_mode: 'fork',
       },
       env_development: {
         NODE_ENV: 'development',

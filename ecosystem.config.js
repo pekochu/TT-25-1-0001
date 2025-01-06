@@ -3,6 +3,7 @@ module.exports = {
     {
       name: 'ESCOMONITOR_BACKEND',
       script: './webdriver-server/dist/src/server.js',
+      cwd: './',
       instances: 1,
       exec_mode: 'fork',
       max_memory_restart: '8096M',
@@ -37,6 +38,7 @@ module.exports = {
     {
       name: 'ESCOMONITOR_FRONTEND',
       script: './frontend/node_modules/next/dist/bin/next',
+      cwd: './frontend/',
       args: 'start',
       instances: 1,
       exec_mode: 'fork',

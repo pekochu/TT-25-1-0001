@@ -19,7 +19,7 @@ import { generateSomeoneContactingHTML, generateSomeoneContactingPlain, generate
 
 
 export const getApi = async (req: Request, res: Response): Promise<void> => {
-  await sendTest();  
+  // await sendTest();  
   res.json({ title: 'TT Monitor :)' }); 
 };
 

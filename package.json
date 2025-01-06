@@ -1,7 +1,7 @@
 {
-    "name": "TT-23-2-0010-Backend",
-    "version": "0.4.0",
-    "description": "Sistema de monitoreo de cambios visuales y de texto en páginas web",
+    "name": "TT-25-1-0001-Backend",
+    "version": "1.0.0",
+    "description": "Sistema de alerta por cambios en páginas de Internet - backend",
     "author": "Luis Angel Bravo Lopez",
     "private": true,
     "license": "MIT",

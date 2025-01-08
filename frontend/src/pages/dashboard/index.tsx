@@ -44,7 +44,7 @@ export default function Dashboard({
       return;
     }
   }, [isAuthenticated]);
-  console.log(currentUser);
+
   return (
     <>
       <Head>

@@ -25,8 +25,8 @@ export default function Configuracion() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/');
+    if (isAuthenticated) {
+      return;
     }
   }, [isAuthenticated]);
 
@@ -44,9 +44,9 @@ export default function Configuracion() {
         <>
           {currentUser.rol === 0 ?
             <>
-              <AdminAppNavbar /><ConfiguracionComponent currentUser={currentUser} />
+              <AdminAppNavbar /><ConfiguracionComponent />
             </> : <>
-              <AppNavbar /><ConfiguracionComponent currentUser={currentUser} />
+              <AppNavbar /><ConfiguracionComponent />
             </>}
         </> : <>
           <Skeleton />

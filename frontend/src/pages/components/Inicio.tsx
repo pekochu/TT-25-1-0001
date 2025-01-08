@@ -17,7 +17,7 @@ import Modal from 'react-bootstrap/Modal';
 import Skeleton from 'react-loading-skeleton'
 import React, { useEffect, useId, useState } from 'react';
 import ReactCrop, { type Crop } from 'react-image-crop';
-import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiSettings, FiStopCircle, FiTrash, FiAlignJustify } from 'react-icons/fi';
+import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiEdit, FiStopCircle, FiTrash, FiAlignJustify, FiActivity } from 'react-icons/fi';
 import { useAuth } from '@/providers/auth/AuthProvider';
 import { generateApiUrl, API_WEB_SCREENSHOT_URL, API_WEB_TITLE, API_WEB_GOTO_URL, API_CREATE_USER_URL, API_WEB_PERFORM_ACTIONS } from '@/lib/constants';
 import StrictModeDroppable from '@/pages/components/StrictModeDroppable';
@@ -105,7 +105,7 @@ export default function InicioComponent() {
   const [tipoComparacion, setTipoComparacion] = useState('visual');
   const [areaMonitor, setAreaMonitor] = useState(false);
   const [tiempoEspera, setTiempoEspera] = useState('2');
-  const [dndState, setDndState] = useState(getItems(1));
+  const [dndState, setDndState] = useState(getItems(0));
   const [action, setAction] = useState(['click']);
   const [nameXpath, setNameXpath] = useState(['']);
 
@@ -349,7 +349,7 @@ export default function InicioComponent() {
                             <option value="21600">6 horas</option>
                             <option value="43200">12 horas</option>
                             <option value="86400">Diario</option>
-                            <option value="604800">Diario</option>
+                            <option value="604800">Semanal</option>
                           </Form.Select>
                         </InputGroup>
                       </Form.Group>
@@ -431,7 +431,7 @@ export default function InicioComponent() {
                                   {dndState.map((item, index) => (
                                     <Draggable key={`${item.id}`} draggableId={`${item.id}`} index={index}>
                                       {(provided: any, snapshot: any) => (
-                                        <ListGroup.Item className="d-flex justify-content-between align-items-start"
+                                        <ListGroup.Item className="d-flex justify-content-between"
                                           ref={provided.innerRef}
                                           {...provided.draggableProps}
                                           {...provided.dragHandleProps}
@@ -440,55 +440,61 @@ export default function InicioComponent() {
                                             provided.draggableProps.style
                                           )}
                                         >
-                                          <FiAlignJustify />
-                                          <div className="">
-                                            <Form.Group className="" controlId={`action-${item.id}`}>
-                                              <InputGroup className="">
-                                                <Form.Select aria-label="Selector de acción" aria-describedby={`action-${item.id}`} defaultValue={action[index]} name={`action-${item.id}`} onChange={(e) => {
-                                                  action[index] = e.target.value;
-                                                  setAction(action);
-                                                  setActionPlaceholder(placeholderAction[`${e.target.value as string}`].placeholder);
-                                                  setActionEnabled(placeholderAction[`${e.target.value as string}`].inputEnabled);
-                                                }}>
-                                                  <option disabled={true}>Tipo de acción</option>
-                                                  <option value="click">Click</option>
-                                                  <option value="doubleclick">Doble click</option>
-                                                  <option value="wait">Esperar</option>
-                                                  <option value="refresh">Actualizar</option>
-                                                  <option value="scroll">Scrollear</option>
-                                                  <option value="goto">Ir a URL</option>
-                                                </Form.Select>
-                                              </InputGroup>
-                                            </Form.Group>
-                                          </div>
-                                          <div className="">
-                                            <Form.Group className="" controlId={`name-xpath-${item.id}`}>
-                                              <InputGroup className="">
-                                                <Form.Control aria-describedby={`name-xpath-${item.id}`} name={`name-xpath-${item.id}`} value={nameXpath[index]} placeholder={actionPlaceholder} disabled={!actionEnabled} required={actionEnabled} onChange={(e) => {
-                                                  setValidated({ value: e.target.value });
-                                                  nameXpath[index] = e.target.value;
-                                                  setNameXpath(nameXpath);
-                                                }} />
-                                              </InputGroup>
-                                            </Form.Group>
-                                          </div>
-                                          <FiTrash
-                                            type="button"
-                                            onClick={() => {
-                                              // Borrar elementos
-                                              const newDndState = [...dndState];
-                                              newDndState.splice(index, 1);
-                                              setDndState(newDndState);
-                                              // Borrar actions
-                                              const newActionState = [...action];
-                                              newActionState.splice(index, 1);
-                                              setAction(newActionState);
-                                              // Borrar name xpath
-                                              const newNameXpath = [...nameXpath];
-                                              newNameXpath.splice(index, 1);
-                                              setNameXpath(newNameXpath);
-                                            }}
-                                          />
+                                          <Container>
+                                            <Row className="justify-content-md-center">
+
+                                              <Col xs lg="4">
+                                                <Form.Group className="" controlId={`action-${item.id}`}>
+                                                  <InputGroup className="">
+                                                    <InputGroup.Text><FiAlignJustify /></InputGroup.Text>
+                                                    <Form.Select aria-label="Selector de acción" aria-describedby={`action-${item.id}`} defaultValue={action[index]} name={`action-${item.id}`} onChange={(e) => {
+                                                      action[index] = e.target.value;
+                                                      setAction(action);
+                                                      setActionPlaceholder(placeholderAction[`${e.target.value as string}`].placeholder);
+                                                      setActionEnabled(placeholderAction[`${e.target.value as string}`].inputEnabled);
+                                                    }}>
+                                                      <option disabled={true}>Tipo de acción</option>
+                                                      <option value="click">Click</option>
+                                                      <option value="doubleclick">Doble click</option>
+                                                      <option value="wait">Esperar</option>
+                                                      <option value="refresh">Actualizar</option>
+                                                      <option value="scroll">Scrollear</option>
+                                                      <option value="goto">Ir a URL</option>
+                                                    </Form.Select>
+                                                  </InputGroup>
+                                                </Form.Group>
+                                              </Col>
+                                              <Col xs lg="8">
+                                                <Form.Group className="" controlId={`name-xpath-${item.id}`}>
+                                                  <InputGroup className="">
+                                                    <InputGroup.Text><FiEdit /></InputGroup.Text>
+                                                    <Form.Control aria-describedby={`name-xpath-${item.id}`} name={`name-xpath-${item.id}`} value={nameXpath[index]} placeholder={actionPlaceholder} disabled={!actionEnabled} required={actionEnabled} onChange={(e) => {
+                                                      setValidated({ value: e.target.value });
+                                                      nameXpath[index] = e.target.value;
+                                                      setNameXpath(nameXpath);
+                                                    }} />
+                                                    <InputGroup.Text><FiTrash
+                                                      type="button"
+                                                      onClick={() => {
+                                                        // Borrar elementos
+                                                        const newDndState = [...dndState];
+                                                        newDndState.splice(index, 1);
+                                                        setDndState(newDndState);
+                                                        // Borrar actions
+                                                        const newActionState = [...action];
+                                                        newActionState.splice(index, 1);
+                                                        setAction(newActionState);
+                                                        // Borrar name xpath
+                                                        const newNameXpath = [...nameXpath];
+                                                        newNameXpath.splice(index, 1);
+                                                        setNameXpath(newNameXpath);
+                                                      }}
+                                                    /></InputGroup.Text>
+                                                  </InputGroup>
+                                                </Form.Group>
+                                              </Col>
+                                            </Row>
+                                          </Container>
                                         </ListGroup.Item>
                                       )}
                                     </Draggable>

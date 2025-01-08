@@ -52,7 +52,7 @@ export const getByIdWithResults = async (id: number): Promise<PagesToTrack> => {
       model: ScheduledTrackingResults.scope('withoutPaths'),
       as: 'managedPagesResults',
       where: {
-        diferencia: {[Op.gt]: 0,}
+        diferencia: { [Op.gt]: -1 }
       }
     }],
     order: [

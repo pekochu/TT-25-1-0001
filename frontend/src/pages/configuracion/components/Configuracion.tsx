@@ -16,10 +16,7 @@ import Cookies from 'universal-cookie';
 import { FiMoreVertical, FiPlay, FiPlayCircle, FiPlusCircle, FiSearch, FiSettings, FiStopCircle, FiTrash } from 'react-icons/fi';
 import { generateApiUrl, API_WEB_SCREENSHOT_URL, API_V1_PAGES, API_CURRENT_USER, API_CREATE_USER_URL } from '@/lib/constants';
 
-interface IConfiguracionProps {
-  currentUser: any
-}
-export default function ConfiguracionComponent({ currentUser }: IConfiguracionProps) {
+export default function ConfiguracionComponent() {
 
   const emailId = useId();
   const telefonoId = useId();
@@ -29,10 +26,6 @@ export default function ConfiguracionComponent({ currentUser }: IConfiguracionPr
   const [email, setEmail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [userDataLoading, setUserDataLoading] = useState(false)
-
-  if (typeof currentUser !== 'undefined') {
-    setEmail(currentUser.email)
-  }
 
   const actualizar = async (event: any) => {
     event.preventDefault();
